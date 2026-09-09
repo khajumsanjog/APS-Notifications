@@ -1,0 +1,67 @@
+# deploy/Caddyfile
+# Production reverse proxy with automatic TLS for aps.khajumsanjog.com
+
+aps.khajumsanjog.com {
+    # 1. WebSocket routing for Pusher Channels
+    @websockets {
+        path /app/* /ws/*
+    }
+    reverse_proxy @websockets aps-ws:6001 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 2. REST Control Plane & Events Trigger API
+    @api {
+        path /apps/* /api/*
+    }
+    reverse_proxy @api aps-api:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 3. Beams Push Notification Engine
+    @beams {
+        path /beams/*
+    }
+    reverse_proxy @beams aps-beams:8082 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 4. Developer Console Dashboard (Next.js)
+    reverse_proxy dashboard:3000
+
+    # Observability & compression
+    encode gzip zstd
+    log {
+        output stdout
+        format json
+    }
+}
+
+# Local development fallback
+:80 {
+    @websockets {
+        path /app/* /ws/*
+    }
+    reverse_proxy @websockets aps-ws:6001
+
+    @api {
+        path /apps/* /api/*
+    }
+    reverse_proxy @api aps-api:8080
+
+    @beams {
+        path /beams/*
+    }
+    reverse_proxy @beams aps-beams:8082
+
+    reverse_proxy dashboard:3000
+}

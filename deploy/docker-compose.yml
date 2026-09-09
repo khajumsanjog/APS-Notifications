@@ -1,0 +1,128 @@
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - aps-ws
+      - aps-api
+      - aps-beams
+      - dashboard
+    networks:
+      - aps-network
+
+  aps-ws:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: ["ws"]
+    restart: unless-stopped
+    environment:
+      APS_WS_PORT: 6001
+      APS_REDIS_URL: redis://redis:6379/0
+      APS_DATABASE_URL: postgres://aps_user:aps_secret@postgres:5432/aps_db?sslmode=disable
+      APS_MASTER_KEY: ${APS_MASTER_KEY:-aps-secure-master-encryption-key-32b!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aps-network
+
+  aps-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: ["api"]
+    restart: unless-stopped
+    environment:
+      APS_API_PORT: 8080
+      APS_REDIS_URL: redis://redis:6379/0
+      APS_DATABASE_URL: postgres://aps_user:aps_secret@postgres:5432/aps_db?sslmode=disable
+      APS_MASTER_KEY: ${APS_MASTER_KEY:-aps-secure-master-encryption-key-32b!}
+      APS_JWT_SECRET: ${APS_JWT_SECRET:-aps-secure-jwt-secret-key-32b-long!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aps-network
+
+  aps-beams:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: ["beams"]
+    restart: unless-stopped
+    environment:
+      APS_BEAMS_PORT: 8082
+      APS_DATABASE_URL: postgres://aps_user:aps_secret@postgres:5432/aps_db?sslmode=disable
+      APS_MASTER_KEY: ${APS_MASTER_KEY:-aps-secure-master-encryption-key-32b!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - aps-network
+
+  dashboard:
+    build:
+      context: ../dashboard
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://aps-api:8080
+      NEXT_PUBLIC_WS_HOST: localhost
+      NEXT_PUBLIC_WS_PORT: 6001
+    depends_on:
+      - aps-api
+    networks:
+      - aps-network
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aps_user
+      POSTGRES_PASSWORD: aps_secret
+      POSTGRES_DB: aps_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aps_user -d aps_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aps-network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aps-network
+
+networks:
+  aps-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:
+  redis_data:

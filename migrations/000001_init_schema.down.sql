@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS push_deliveries;
+DROP TABLE IF EXISTS webhook_deliveries;
+DROP TABLE IF EXISTS webhooks;
+DROP TABLE IF EXISTS channel_history;
+DROP TABLE IF EXISTS devices;
+DROP TABLE IF EXISTS beams_instances;
+DROP TABLE IF EXISTS api_keys;
+DROP TABLE IF EXISTS apps;
+DROP TABLE IF EXISTS users;

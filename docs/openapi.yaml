@@ -1,0 +1,1022 @@
+openapi: 3.0.3
+info:
+  title: APS (Aadhan Pradhan Services) API
+  description: |
+    Self-hosted, Pusher Channels & Pusher Beams compatible real-time and push notification infrastructure platform.
+    Written in Go 1.26.4+.
+  version: 1.0.0
+  contact:
+    name: Khajum Sanjog Engineering
+    url: https://aps.khajumsanjog.com
+servers:
+  - url: http://localhost:8080
+    description: Local All-in-One Development Server
+  - url: https://aps.khajumsanjog.com
+    description: Production HTTPS Endpoint
+
+components:
+  securitySchemes:
+    PusherHMAC:
+      type: apiKey
+      name: auth_signature
+      in: query
+      description: Pusher HMAC-SHA256 query parameter authentication
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Developer Console JWT session token or raw API key
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid authentication signature
+
+    App:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "100001"
+        name:
+          type: string
+          example: "Khajum Sanjog Realtime"
+        app_key:
+          type: string
+          example: "aps_key_demo_12345"
+        app_secret:
+          type: string
+          example: "aps_secret_demo_67890"
+        owner_id:
+          type: string
+          example: "usr_default_admin"
+        cluster:
+          type: string
+          example: "mt1"
+        rate_limit_rps:
+          type: integer
+          example: 1000
+        max_connections:
+          type: integer
+          example: 10000
+        message_history_enabled:
+          type: boolean
+          example: true
+        webhooks_enabled:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    EventTriggerRequest:
+      type: object
+      required:
+        - name
+        - channels
+        - data
+      properties:
+        name:
+          type: string
+          example: "order_created"
+        channels:
+          type: array
+          items:
+            type: string
+          example: ["orders", "orders-warehouse"]
+        data:
+          description: Event payload (can be JSON object or stringified JSON)
+          type: object
+          example:
+            order_id: "ord_9901"
+            amount_npr: 1500
+        socket_id:
+          type: string
+          description: Exclude this socket from receiving the broadcast
+          example: "1002.4820194"
+        info:
+          type: string
+          description: Comma-separated attributes to return in response (e.g. 'user_count')
+          example: "user_count"
+
+    BatchEventsRequest:
+      type: object
+      required:
+        - batch
+      properties:
+        batch:
+          type: array
+          maxItems: 10
+          items:
+            type: object
+            required:
+              - channel
+              - name
+              - data
+            properties:
+              channel:
+                type: string
+                example: "donations"
+              name:
+                type: string
+                example: "donation_received"
+              data:
+                type: object
+                example:
+                  donor: "Ram"
+                  amount: 500
+
+    UnifiedBroadcastRequest:
+      type: object
+      required:
+        - channel
+        - event
+        - payload
+      properties:
+        channel:
+          type: string
+          example: "announcements"
+        event:
+          type: string
+          example: "new_announcement"
+        payload:
+          type: object
+          example:
+            title: "Platform Maintenance"
+            time: "22:00 NST"
+        push_notification:
+          type: object
+          properties:
+            title:
+              type: string
+              example: "Platform Maintenance"
+            body:
+              type: string
+              example: "Scheduled maintenance starting tonight at 22:00 NST"
+            interest:
+              type: string
+              example: "announcements"
+
+    DeviceRegisterRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          example: "fcm_token_sample_abc123"
+        user_id:
+          type: string
+          example: "usr_1001"
+        interests:
+          type: array
+          items:
+            type: string
+          example: ["announcements", "donations"]
+        metadata:
+          type: object
+          example:
+            app_version: "2.4.0"
+            os_version: "Android 14"
+
+    PublishInterestsRequest:
+      type: object
+      required:
+        - interests
+      properties:
+        interests:
+          type: array
+          items:
+            type: string
+          example: ["announcements"]
+        fcm:
+          type: object
+          properties:
+            notification:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "New Announcement"
+                body:
+                  type: string
+                  example: "Check your dashboard for updates"
+        apns:
+          type: object
+          properties:
+            aps:
+              type: object
+              properties:
+                alert:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      example: "New Announcement"
+                    body:
+                      type: string
+                      example: "Check your dashboard for updates"
+
+    PublishUsersRequest:
+      type: object
+      required:
+        - users
+      properties:
+        users:
+          type: array
+          items:
+            type: string
+          example: ["usr_1001", "usr_1002"]
+        fcm:
+          type: object
+        apns:
+          type: object
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "83f669d2-be0f-46bf-9ff0-c9e0e025e7e6"
+        app_id:
+          type: string
+          example: "100001"
+        url:
+          type: string
+          example: "https://webhook.site/aps-test"
+        events:
+          type: array
+          items:
+            type: string
+          example: ["channel_occupied", "channel_vacated", "member_added", "member_removed", "client_event"]
+        secret:
+          type: string
+          example: "18b95df0162c43c198f7aecc5a3e9e6b"
+        active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  # =========================================================
+  # Health & Status
+  # =========================================================
+  /healthz:
+    get:
+      summary: Health Check
+      description: Returns health status of the APS server.
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  service:
+                    type: string
+                    example: "aps-all-in-one"
+                  version:
+                    type: string
+                    example: "1.0.0"
+
+  # =========================================================
+  # Pusher Channels REST API
+  # =========================================================
+  /apps/{app_id}/events:
+    post:
+      summary: Trigger Channel Event
+      description: Publish an event to one or more channels (compatible with Pusher REST API).
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventTriggerRequest'
+      responses:
+        "200":
+          description: Event dispatched successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /apps/{app_id}/batch_events:
+    post:
+      summary: Trigger Batch Events
+      description: Dispatches up to 10 events across different channels in a single request.
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchEventsRequest'
+      responses:
+        "200":
+          description: Batch events published.
+
+  /apps/{app_id}/channels:
+    get:
+      summary: List Occupied Channels
+      description: Returns a list of currently occupied channels and optionally user counts.
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: filter_by_prefix
+          in: query
+          schema:
+            type: string
+            example: "presence-"
+        - name: info
+          in: query
+          schema:
+            type: string
+            example: "user_count"
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Channels map.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  channels:
+                    type: object
+
+  /apps/{app_id}/channels/{channel_name}:
+    get:
+      summary: Get Channel Information
+      description: Returns information about a specific channel (e.g. user_count for presence channels).
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: info
+          in: query
+          schema:
+            type: string
+            example: "user_count"
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Channel details.
+
+  /apps/{app_id}/channels/{channel_name}/users:
+    get:
+      summary: List Users in Presence Channel
+      description: Returns list of user IDs currently subscribed to the given presence channel.
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel_name
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of presence users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+
+  /apps/{app_id}/channels/{channel_name}/terminate_connections:
+    post:
+      summary: Terminate Channel Connections
+      description: Forcibly closes all client WebSocket connections subscribed to a given channel.
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel_name
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Connections terminated.
+
+  /apps/{app_id}/channels/{channel_name}/history:
+    get:
+      summary: Get Channel Message History
+      description: APS feature — retrieves historical messages published to a channel for replay.
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channel_name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Channel messages.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  channel:
+                    type: string
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        event_name:
+                          type: string
+                        payload:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+
+  /apps/{app_id}/broadcast:
+    post:
+      summary: Unified Real-Time & Push Broadcast
+      description: APS feature — atomically broadcasts a WebSocket channel event and triggers a Beams push notification to subscribers in a single call.
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - PusherHMAC: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnifiedBroadcastRequest'
+      responses:
+        "200":
+          description: Unified broadcast executed.
+
+  # =========================================================
+  # APS Beams Push Notification Engine
+  # =========================================================
+  /beams/{instance_id}/devices/fcm/register:
+    post:
+      summary: Register FCM Device
+      description: Registers an Android or Web FCM device token with optional user_id and initial interests.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegisterRequest'
+      responses:
+        "201":
+          description: Device registered successfully.
+
+  /beams/{instance_id}/devices/apns/register:
+    post:
+      summary: Register APNs Device
+      description: Registers an iOS device token with optional user_id and initial interests.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegisterRequest'
+      responses:
+        "201":
+          description: Device registered successfully.
+
+  /beams/{instance_id}/devices/{device_id}:
+    delete:
+      summary: Delete Device
+      description: Deregisters a device token from the Beams instance.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: device_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Device deleted.
+
+  /beams/{instance_id}/devices/{device_id}/interests:
+    put:
+      summary: Set Device Interests
+      description: Replaces the full list of interests (topics) for a registered device.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: device_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - interests
+              properties:
+                interests:
+                  type: array
+                  items:
+                    type: string
+                  example: ["donations", "orders", "announcements"]
+      responses:
+        "200":
+          description: Interests updated.
+
+  /beams/{instance_id}/publishes/interests:
+    post:
+      summary: Publish Push to Interests
+      description: Delivers push notifications to all devices subscribed to one or more topics.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishInterestsRequest'
+      responses:
+        "200":
+          description: Notification dispatched.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  publish_id:
+                    type: string
+                    example: "pub_47a0f8dfe9cf4f2d"
+                  sent_count:
+                    type: integer
+                    example: 24
+
+  /beams/{instance_id}/publishes/users:
+    post:
+      summary: Publish Push to Users
+      description: Delivers push notifications to all devices registered under specific authenticated user IDs.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishUsersRequest'
+      responses:
+        "200":
+          description: Notification dispatched.
+
+  /beams/{instance_id}/devices:
+    get:
+      summary: List Registered Devices
+      description: Returns list of devices registered with this Beams instance.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of devices.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /beams/{instance_id}/publishes:
+    get:
+      summary: List Push Deliveries
+      description: Returns recent push delivery history records and dispatch receipts.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of push delivery attempts.
+
+  /beams/{instance_id}/credentials/fcm:
+    put:
+      summary: Upload FCM Credentials
+      description: Securely uploads and AES-256-GCM encrypts Firebase service account credentials.
+      parameters:
+        - name: instance_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - service_account_json
+              properties:
+                service_account_json:
+                  type: string
+      responses:
+        "200":
+          description: FCM credentials updated.
+
+  # =========================================================
+  # Developer Console Control Plane API
+  # =========================================================
+  /api/auth/register:
+    post:
+      summary: Register Developer Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: "developer@khajumsanjog.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        "201":
+          description: Account created.
+
+  /api/auth/login:
+    post:
+      summary: Developer Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: "developer@khajumsanjog.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        "200":
+          description: Logged in successfully. Returns JWT token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+
+  /api/auth/me:
+    get:
+      summary: Get Current Session
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Current user information.
+
+  /api/apps:
+    get:
+      summary: List Applications
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of applications owned by the authenticated developer.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/App'
+    post:
+      summary: Create Application
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "Khajum Sanjog Mobile App"
+                cluster:
+                  type: string
+                  default: "mt1"
+      responses:
+        "201":
+          description: Application created.
+
+  /api/apps/{id}:
+    get:
+      summary: Get Application Details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: App details and Beams instance configuration.
+    put:
+      summary: Update Application Settings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                rate_limit_rps:
+                  type: integer
+                max_connections:
+                  type: integer
+                message_history_enabled:
+                  type: boolean
+                webhooks_enabled:
+                  type: boolean
+      responses:
+        "200":
+          description: App updated.
+    delete:
+      summary: Delete Application
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: App deleted.
+
+  /api/apps/{id}/stats:
+    get:
+      summary: Get Real-Time App Statistics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Live statistics.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  active_connections:
+                    type: integer
+                    example: 42
+                  occupied_channels:
+                    type: integer
+                    example: 5
+                  presence_users:
+                    type: integer
+                    example: 18
+
+  /api/apps/{id}/webhooks:
+    get:
+      summary: List Webhooks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of webhooks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Webhook'
+    post:
+      summary: Create Webhook Endpoint
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+                - events
+              properties:
+                url:
+                  type: string
+                  example: "https://myserver.com/webhooks/aps"
+                events:
+                  type: array
+                  items:
+                    type: string
+                  example: ["channel_occupied", "channel_vacated", "member_added", "member_removed", "client_event"]
+      responses:
+        "201":
+          description: Webhook created.
+
+  /api/apps/{id}/webhooks/{webhook_id}:
+    delete:
+      summary: Delete Webhook Endpoint
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: webhook_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Webhook deleted.
+
+  /api/apps/{id}/webhooks/deliveries:
+    get:
+      summary: List Webhook Delivery History
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recent webhook delivery attempts.

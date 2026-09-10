@@ -13,6 +13,7 @@ import (
 	"github.com/khajumsanjog/aps/internal/config"
 	"github.com/khajumsanjog/aps/internal/crypto"
 	"github.com/khajumsanjog/aps/internal/store"
+	"github.com/khajumsanjog/aps/internal/webhook"
 	"github.com/rs/zerolog/log"
 )
 
@@ -31,7 +32,9 @@ func main() {
 		}
 	}
 
+	wh := webhook.NewDispatcher(st, masterKey)
 	beamsSvc := beams.NewService(st, masterKey)
+	beamsSvc.SetWebhook(wh)
 
 	addr := fmt.Sprintf(":%d", cfg.BeamsPort)
 	srv := &http.Server{

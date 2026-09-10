@@ -46,7 +46,9 @@ func main() {
 	wh := webhook.NewDispatcher(st, masterKey)
 	hub := ws.NewHub(st, ps, masterKey, wh)
 	beamsSvc := beams.NewService(st, masterKey)
+	beamsSvc.SetWebhook(wh)
 	apiSvc := api.NewAPI(st, hub, ps, beamsSvc, masterKey, cfg.JWTSecret)
+	apiSvc.SetWebhook(wh)
 
 	addr := fmt.Sprintf(":%d", cfg.APIPort)
 	srv := &http.Server{

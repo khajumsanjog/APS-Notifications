@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { setAuthToken, API_BASE } from "@/lib/api";
-import { Radio, Shield, Zap, AlertCircle, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { Radio, AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,10 +35,10 @@ export default function LoginPage() {
       }
 
       setAuthToken(data.token);
-      setSuccessMsg(tab === "login" ? "Authentication successful! Redirecting..." : "Account created! Redirecting...");
+      setSuccessMsg(tab === "login" ? "Signed in successfully. Redirecting..." : "Account created. Redirecting...");
       setTimeout(() => {
         router.push("/dashboard");
-      }, 500);
+      }, 400);
     } catch (err: any) {
       setError(err.message || "An error occurred during authentication");
     } finally {
@@ -54,39 +54,35 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#070b14] text-slate-100 relative overflow-hidden selection:bg-blue-500 selection:text-white">
-      {/* Background glow effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-gradient-to-tr from-blue-600/20 via-indigo-600/15 to-purple-600/10 blur-[130px] pointer-events-none -z-10 rounded-full" />
-      <div className="absolute bottom-10 right-10 w-[300px] h-[300px] bg-blue-500/10 blur-[100px] pointer-events-none -z-10 rounded-full" />
-
-      <div className="w-full max-w-md">
-        {/* Logo and Brand Header */}
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-zinc-950 text-zinc-100">
+      <div className="w-full max-w-sm">
+        {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-b from-blue-500/20 to-blue-600/10 border border-blue-500/30 text-blue-400 mb-4 shadow-xl shadow-blue-500/10 backdrop-blur-md">
-            <Radio className="w-8 h-8 animate-pulse" />
+          <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 mb-4 shadow-sm">
+            <Radio className="w-5 h-5" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            APS Console
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
+            APS Developer Console
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Aadhan Pradhan Services — Pusher & Beams Platform
+          <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
+            Real-time WebSocket and push notification infrastructure
           </p>
         </div>
 
-        {/* Card */}
-        <div className="p-7 sm:p-8 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl backdrop-blur-xl">
-          {/* Tab Switcher */}
-          <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-950 border border-slate-800/80 mb-6 text-xs font-semibold">
+        {/* Auth Card */}
+        <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-xl p-6 shadow-sm">
+          {/* Segmented Tab Switcher */}
+          <div className="grid grid-cols-2 p-1 rounded-lg bg-zinc-950 border border-zinc-800/60 mb-5 text-xs font-medium">
             <button
               type="button"
               onClick={() => {
                 setTab("login");
                 setError("");
               }}
-              className={`py-2 rounded-lg transition-all ${
+              className={`py-1.5 rounded-md transition-colors ${
                 tab === "login"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               Sign In
@@ -97,113 +93,89 @@ export default function LoginPage() {
                 setTab("register");
                 setError("");
               }}
-              className={`py-2 rounded-lg transition-all ${
+              className={`py-1.5 rounded-md transition-colors ${
                 tab === "register"
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               Create Account
             </button>
           </div>
 
-          {/* Error Banner */}
+          {/* Error Message */}
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-2.5 text-xs text-red-300 animate-in fade-in">
+            <div className="mb-4 p-3 rounded-lg bg-red-950/30 border border-red-900/50 flex items-start gap-2.5 text-xs text-red-300">
               <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
-              <div className="flex-1 leading-relaxed">{error}</div>
+              <div className="flex-1 leading-normal">{error}</div>
             </div>
           )}
 
-          {/* Success Banner */}
+          {/* Success Message */}
           {successMsg && (
-            <div className="mb-5 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-300 animate-in fade-in">
+            <div className="mb-4 p-3 rounded-lg bg-emerald-950/30 border border-emerald-900/50 flex items-center gap-2 text-xs text-emerald-300">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-              <span>{successMsg}</span>
+              <div className="flex-1">{successMsg}</div>
             </div>
           )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1.5">
-                Email Address
+              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                Work Email
               </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="developer@khajumsanjog.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"
+                placeholder="name@company.com"
+                className="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-zinc-300">
+                  Password
+                </label>
+              </div>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"
+                className="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-3 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-semibold text-white shadow-lg shadow-blue-600/25 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full mt-2 py-2 px-4 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs transition flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm active:scale-[0.99]"
             >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Authenticating...</span>
-                </>
-              ) : (
-                <>
-                  <span>{tab === "login" ? "Sign In to Console" : "Create Developer Account"}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
+              <span>{loading ? "Processing..." : tab === "login" ? "Sign In" : "Create Account"}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
 
-          {/* Demo account quick fill */}
-          <div className="mt-6 pt-5 border-t border-slate-800/80">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Pre-seeded demo account:</span>
-              </span>
-              <button
-                type="button"
-                onClick={fillDemo}
-                className="text-blue-400 hover:text-blue-300 font-medium hover:underline cursor-pointer transition"
-              >
-                Use Demo Login
-              </button>
-            </div>
-            <div className="mt-2 px-3 py-2 rounded-lg bg-slate-950 border border-slate-800/80 font-mono text-[11px] text-slate-400 flex items-center justify-between">
-              <span>developer@khajumsanjog.com</span>
-              <span className="text-slate-500">password123</span>
-            </div>
+          {/* Demo Helper Button */}
+          <div className="mt-5 pt-4 border-t border-zinc-800/60 text-center">
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="text-[11px] text-zinc-400 hover:text-zinc-200 transition"
+            >
+              Use demo account: <span className="font-mono text-zinc-300">developer@khajumsanjog.com</span>
+            </button>
           </div>
         </div>
 
-        {/* Feature Badges */}
-        <div className="flex items-center justify-center gap-6 mt-8 text-xs text-slate-400">
-          <div className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-blue-400" />
-            <span>Pusher v7 Drop-in</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Self-Hosted & Isolated</span>
-          </div>
+        {/* Footer info */}
+        <div className="mt-6 text-center text-[11px] text-zinc-500">
+          APS v1.0.0 · Self-hosted cluster
         </div>
       </div>
     </div>

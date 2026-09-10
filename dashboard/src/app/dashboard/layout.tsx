@@ -6,7 +6,6 @@ import Link from "next/link";
 import { fetchWithAuth, clearAuthToken } from "@/lib/api";
 import {
   Radio,
-  Layers,
   Terminal,
   Bell,
   Webhook,
@@ -15,7 +14,7 @@ import {
   LogOut,
   Plus,
   ChevronDown,
-  Activity,
+  BookOpen,
 } from "lucide-react";
 
 interface AppItem {
@@ -50,7 +49,6 @@ export default function DashboardLayout({
         const data = await res.json();
         setApps(data || []);
         if (data && data.length > 0) {
-          // If URL already contains an app ID, pick it
           const parts = pathname.split("/");
           const appIndex = parts.indexOf("apps");
           if (appIndex !== -1 && parts[appIndex + 1]) {
@@ -105,28 +103,34 @@ export default function DashboardLayout({
     { name: "APS Beams Push", href: `/dashboard/apps/${currentAppId}/beams`, icon: Bell },
     { name: "Webhooks & Replay", href: `/dashboard/apps/${currentAppId}/webhooks`, icon: Webhook },
     { name: "Message History", href: `/dashboard/apps/${currentAppId}/history`, icon: History },
+    { name: "API Docs & Quickstart", href: `/dashboard/apps/${currentAppId}/docs`, icon: BookOpen },
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#090d16]">
+    <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800/80 bg-[#0d1322] flex flex-col shrink-0">
-        {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800/80">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-            <Radio className="w-4 h-4" />
+      <aside className="w-60 border-r border-zinc-800/80 bg-zinc-950 flex flex-col shrink-0 select-none">
+        {/* Brand Header */}
+        <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800/80">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-100">
+              <Radio className="w-3.5 h-3.5" />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-xs text-zinc-100 tracking-tight">APS</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Console</span>
+            </div>
           </div>
-          <div>
-            <div className="font-bold text-sm tracking-wide text-white">APS Console</div>
-            <div className="text-[10px] font-mono text-blue-400">aps.khajumsanjog.com</div>
-          </div>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+            v1.0
+          </span>
         </div>
 
         {/* App Switcher */}
-        <div className="p-4 border-b border-slate-800/80">
-          <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
+        <div className="p-3 border-b border-zinc-800/80">
+          <div className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 mb-1.5 px-1">
             Application
-          </label>
+          </div>
           {apps.length > 0 ? (
             <div className="relative">
               <select
@@ -138,7 +142,7 @@ export default function DashboardLayout({
                     router.push(`/dashboard/apps/${a.id}`);
                   }
                 }}
-                className="w-full appearance-none px-3 py-2 text-xs font-medium rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                className="w-full appearance-none px-2.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-900/90 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-zinc-500 cursor-pointer pr-8 transition"
               >
                 {apps.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -146,23 +150,23 @@ export default function DashboardLayout({
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-zinc-500 absolute right-2.5 top-2 pointer-events-none" />
             </div>
           ) : (
-            <div className="text-xs text-slate-500">No applications found</div>
+            <div className="text-xs text-zinc-500 px-1">No applications</div>
           )}
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="w-full mt-2 py-1.5 px-3 rounded-lg border border-dashed border-slate-700 hover:border-blue-500/50 hover:bg-blue-500/5 text-xs text-slate-400 hover:text-blue-300 flex items-center justify-center gap-1.5 transition"
+            className="w-full mt-2 py-1.5 px-2.5 rounded-lg border border-dashed border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 text-[11px] text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create New App</span>
+            <Plus className="w-3 h-3" />
+            <span>Create Application</span>
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
           {selectedApp ? (
             navItems.map((item) => {
               const Icon = item.icon;
@@ -171,97 +175,97 @@ export default function DashboardLayout({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition ${
                     isActive
-                      ? "bg-blue-600/15 text-blue-400 border border-blue-500/20"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                      ? "bg-zinc-900 text-zinc-100 font-medium border border-zinc-800/90 shadow-xs"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-blue-400" : "text-slate-400"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-zinc-100" : "text-zinc-500"}`} />
                   <span>{item.name}</span>
                 </Link>
               );
             })
           ) : (
-            <div className="p-4 text-center text-xs text-slate-500">
-              Create or select an app to view developer tools.
+            <div className="p-3 text-center text-xs text-zinc-500">
+              Select an application
             </div>
           )}
         </nav>
 
-        {/* User Footer */}
-        <div className="p-4 border-t border-slate-800/80 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-            <span className="text-[11px] text-slate-400 font-mono">Cluster: mt1 (Online)</span>
+        {/* Footer */}
+        <div className="p-3 border-t border-zinc-800/80 flex items-center justify-between">
+          <div className="flex items-center gap-2 px-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span className="text-[11px] text-zinc-500 font-mono">mt1 · online</span>
           </div>
           <button
             onClick={handleLogout}
-            title="Sign Out"
-            className="text-slate-400 hover:text-red-400 p-1.5 rounded-md hover:bg-slate-800/60 transition"
+            title="Sign out"
+            className="text-zinc-500 hover:text-zinc-300 p-1 rounded-md hover:bg-zinc-900 transition cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-zinc-950">
         {children}
       </main>
 
       {/* Create App Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="glass-panel w-full max-w-md p-6 rounded-2xl shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-2">Create Application</h3>
-            <p className="text-xs text-slate-400 mb-6">
-              Create a new Pusher Channels & Beams tenant app with isolated credentials.
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-sm p-5 rounded-xl shadow-2xl">
+            <h3 className="text-sm font-semibold text-zinc-100 mb-1">Create Application</h3>
+            <p className="text-xs text-zinc-400 mb-5">
+              Set up a new isolated real-time tenant with unique API keys.
             </p>
 
             <form onSubmit={handleCreateApp} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                  App Name
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                  Application Name
                 </label>
                 <input
                   type="text"
                   required
                   value={newAppName}
                   onChange={(e) => setNewAppName(e.target.value)}
-                  placeholder="e.g. Khajum Sanjog Mobile"
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. Mobile App Production"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Cluster
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                  Cluster Region
                 </label>
                 <select
                   value={newAppCluster}
                   onChange={(e) => setNewAppCluster(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs focus:outline-none focus:border-zinc-500 cursor-pointer transition"
                 >
-                  <option value="mt1">mt1 (US East / Primary)</option>
+                  <option value="mt1">mt1 (Primary)</option>
                   <option value="eu">eu (Europe)</option>
                   <option value="ap1">ap1 (Asia Pacific)</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-zinc-800/80">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-950 transition cursor-pointer shadow-xs active:scale-[0.99]"
                 >
-                  Create Application
+                  Create
                 </button>
               </div>
             </form>

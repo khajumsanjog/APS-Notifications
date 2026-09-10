@@ -9,10 +9,9 @@ import {
   Smartphone,
   CheckCircle,
   AlertCircle,
-  Upload,
   Shield,
   Clock,
-  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 
 export default function BeamsPushPage() {
@@ -49,7 +48,6 @@ export default function BeamsPushPage() {
         setBeamsInstance(inst);
 
         if (inst?.instance_id) {
-          // Load devices & deliveries
           const devRes = await fetchWithAuth(`/beams/${inst.instance_id}/devices`);
           if (devRes.ok) {
             const devData = await devRes.json();
@@ -105,7 +103,7 @@ export default function BeamsPushPage() {
       if (res.ok) {
         setFeedback({
           success: true,
-          msg: `Push published! Publish ID: ${resData.publish_id} (Delivered to ${resData.sent_count} device targets)`,
+          msg: `Notification published (ID: ${resData.publish_id}). Delivered to ${resData.sent_count} device targets.`,
         });
         loadBeamsData();
       } else {
@@ -139,66 +137,63 @@ export default function BeamsPushPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex-1 flex items-center justify-center p-12">
+        <div className="w-5 h-5 border-2 border-zinc-700 border-t-zinc-300 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
+    <div className="p-8 max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Bell className="w-6 h-6 text-blue-400" />
-            APS Beams Push Notifications
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Topic-based interests, authenticated users, FCM and APNs multi-platform delivery.
+          <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">APS Beams Push Notifications</h1>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Deliver mobile push notifications via FCM (Android) and APNs (iOS) with interest topics or authenticated user IDs.
           </p>
         </div>
 
-        <div className="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
-          Instance ID: <span className="text-white">{beamsInstance?.instance_id || "None"}</span>
+        <div className="text-xs font-mono px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400">
+          Instance: <span className="text-zinc-200">{beamsInstance?.instance_id || "None"}</span>
         </div>
       </div>
 
       {feedback && (
         <div
-          className={`p-4 rounded-xl flex items-center gap-2 text-xs font-medium border ${
+          className={`p-3 rounded-lg flex items-center gap-2 text-xs border ${
             feedback.success
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
-              : "bg-red-500/10 border-red-500/20 text-red-300"
+              ? "bg-emerald-950/30 border-emerald-900/50 text-emerald-300"
+              : "bg-red-950/30 border-red-900/50 text-red-300"
           }`}
         >
-          {feedback.success ? <CheckCircle className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+          {feedback.success ? <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" /> : <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />}
           <span>{feedback.msg}</span>
         </div>
       )}
 
       {/* Main 2-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Send Push Notification Console */}
-        <div className="glass-panel p-6 rounded-2xl shadow-xl space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Send className="w-4 h-4 text-blue-400" />
-            <h2 className="text-base font-semibold text-white">Publish Notification</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Publish Notification */}
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-100">Publish Notification</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">Send a test notification to subscribers or individual users.</p>
           </div>
 
-          <form onSubmit={handleSendPush} className="space-y-4">
+          <form onSubmit={handleSendPush} className="space-y-3.5">
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium text-zinc-400 mb-1.5">
                 Targeting Type
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 p-0.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-medium">
                 <button
                   type="button"
                   onClick={() => setTargetType("interest")}
-                  className={`py-2 text-xs font-medium rounded-lg border transition ${
+                  className={`py-1.5 rounded-md transition cursor-pointer ${
                     targetType === "interest"
-                      ? "bg-blue-600 border-blue-500 text-white"
-                      : "bg-slate-900 border-slate-700 text-slate-400 hover:text-white"
+                      ? "bg-zinc-800 text-zinc-100 shadow-xs"
+                      : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
                   Interest (Topic)
@@ -206,10 +201,10 @@ export default function BeamsPushPage() {
                 <button
                   type="button"
                   onClick={() => setTargetType("user")}
-                  className={`py-2 text-xs font-medium rounded-lg border transition ${
+                  className={`py-1.5 rounded-md transition cursor-pointer ${
                     targetType === "user"
-                      ? "bg-blue-600 border-blue-500 text-white"
-                      : "bg-slate-900 border-slate-700 text-slate-400 hover:text-white"
+                      ? "bg-zinc-800 text-zinc-100 shadow-xs"
+                      : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
                   Authenticated User ID
@@ -218,7 +213,7 @@ export default function BeamsPushPage() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
                 {targetType === "interest" ? "Interest Name" : "User ID"}
               </label>
               <input
@@ -226,13 +221,13 @@ export default function BeamsPushPage() {
                 required
                 value={targetValue}
                 onChange={(e) => setTargetValue(e.target.value)}
-                placeholder={targetType === "interest" ? "e.g. donations" : "e.g. usr_1001"}
-                className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono"
+                placeholder={targetType === "interest" ? "e.g. announcements" : "e.g. usr_1001"}
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-zinc-500 transition"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
                 Notification Title
               </label>
               <input
@@ -240,12 +235,12 @@ export default function BeamsPushPage() {
                 required
                 value={pushTitle}
                 onChange={(e) => setPushTitle(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500 transition"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
                 Message Body
               </label>
               <textarea
@@ -253,63 +248,62 @@ export default function BeamsPushPage() {
                 required
                 value={pushBody}
                 onChange={(e) => setPushBody(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500 transition leading-relaxed"
               />
             </div>
 
             <button
               type="submit"
               disabled={sending}
-              className="w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/25 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2 px-3 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>{sending ? "Sending..." : "Publish Notification"}</span>
+              <Send className="w-3 h-3" />
+              <span>{sending ? "Publishing..." : "Publish Notification"}</span>
             </button>
           </form>
         </div>
 
         {/* Credentials Manager */}
-        <div className="glass-panel p-6 rounded-2xl shadow-xl space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="w-4 h-4 text-emerald-400" />
-            <h2 className="text-base font-semibold text-white">Push Credentials</h2>
+        <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-100">Push Gateway Credentials</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Encrypted AES-256-GCM storage. Simulation mode active for local development.
+            </p>
           </div>
-          <p className="text-xs text-slate-400">
-            Stored encrypted with AES-256-GCM. APS automatically uses mock/simulation delivery in local dev mode.
-          </p>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+          <div className="p-3.5 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-300">Firebase Cloud Messaging (FCM)</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px]">
-                {beamsInstance?.has_fcm || fcmStatus ? "Configured" : "Dev Mock Active"}
+              <span className="font-medium text-zinc-200">Firebase Cloud Messaging (FCM)</span>
+              <span className="px-2 py-0.5 rounded bg-zinc-850 text-zinc-400 text-[10px] font-mono">
+                {beamsInstance?.has_fcm || fcmStatus ? "Configured" : "Dev Simulation"}
               </span>
             </div>
-            <form onSubmit={handleSaveFCM} className="space-y-2 pt-2">
+            <form onSubmit={handleSaveFCM} className="space-y-2 pt-1">
               <textarea
                 rows={3}
                 value={fcmJSON}
                 onChange={(e) => setFcmJSON(e.target.value)}
                 placeholder='Paste Firebase service-account.json...'
-                className="w-full p-2 text-[11px] font-mono rounded-lg bg-slate-950 border border-slate-800 text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full p-2 text-[11px] font-mono rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 focus:outline-none focus:border-zinc-500 transition"
               />
               <button
                 type="submit"
-                className="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 transition"
+                className="py-1.5 px-3 rounded-md bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200 transition cursor-pointer font-medium"
               >
                 Save FCM Service Account
               </button>
             </form>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+          <div className="p-3.5 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-300">Apple Push Notifications (APNs)</span>
-              <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[10px]">
-                {beamsInstance?.has_apns ? "Configured" : "Dev Mock Active"}
+              <span className="font-medium text-zinc-200">Apple Push Notifications (APNs)</span>
+              <span className="px-2 py-0.5 rounded bg-zinc-850 text-zinc-400 text-[10px] font-mono">
+                {beamsInstance?.has_apns ? "Configured" : "Dev Simulation"}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-zinc-500 leading-normal">
               Supports .p8 Auth Key with token-based HTTP/2 connection pooling.
             </p>
           </div>
@@ -317,45 +311,41 @@ export default function BeamsPushPage() {
       </div>
 
       {/* Registered Devices Table */}
-      {/* Registered Devices Table */}
-      <div className="glass-panel p-6 rounded-2xl shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-purple-400" />
-            <h2 className="text-base font-semibold text-white">Registered Devices ({(devices || []).length})</h2>
-          </div>
-        </div>
+      <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-3">
+        <h2 className="text-sm font-semibold text-zinc-100">
+          Registered Devices ({(devices || []).length})
+        </h2>
 
         {(devices || []).length === 0 ? (
-          <div className="p-8 text-center text-xs text-slate-500">
-            No devices registered yet. Devices register via <span className="font-mono text-slate-400">POST /beams/{'{instance_id}'}/devices/*/register</span>.
+          <div className="p-6 text-center text-xs text-zinc-500">
+            No devices registered yet. Devices register via <span className="font-mono text-zinc-400">POST /beams/{'{instance_id}'}/devices/*/register</span>.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+              <thead className="text-[11px] uppercase tracking-wider text-zinc-400 border-b border-zinc-800">
                 <tr>
-                  <th className="pb-3 font-semibold">Device ID</th>
-                  <th className="pb-3 font-semibold">Platform</th>
-                  <th className="pb-3 font-semibold">Token Preview</th>
-                  <th className="pb-3 font-semibold">User ID</th>
-                  <th className="pb-3 font-semibold">Interests</th>
+                  <th className="pb-2.5 font-medium">Device ID</th>
+                  <th className="pb-2.5 font-medium">Platform</th>
+                  <th className="pb-2.5 font-medium">Token Preview</th>
+                  <th className="pb-2.5 font-medium">User ID</th>
+                  <th className="pb-2.5 font-medium">Interests</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
+              <tbody className="divide-y divide-zinc-800/60 font-mono">
                 {(devices || []).map((d) => (
-                  <tr key={d.device_id} className="text-slate-300">
-                    <td className="py-3 text-white">{d.device_id}</td>
-                    <td className="py-3">
-                      <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[11px] uppercase font-bold">
+                  <tr key={d.device_id} className="text-zinc-300">
+                    <td className="py-2.5 text-zinc-200">{d.device_id}</td>
+                    <td className="py-2.5">
+                      <span className="px-1.5 py-0.5 rounded bg-zinc-850 text-zinc-400 text-[10px] uppercase font-semibold">
                         {d.platform}
                       </span>
                     </td>
-                    <td className="py-3 text-slate-500 truncate max-w-xs">{d.token}</td>
-                    <td className="py-3 text-slate-400">{d.user_id || "—"}</td>
-                    <td className="py-3">
+                    <td className="py-2.5 text-zinc-500 truncate max-w-xs">{d.token}</td>
+                    <td className="py-2.5 text-zinc-400">{d.user_id || "—"}</td>
+                    <td className="py-2.5">
                       {d.interests?.map((it: string) => (
-                        <span key={it} className="mr-1 px-1.5 py-0.5 rounded bg-slate-800 text-[10px]">
+                        <span key={it} className="mr-1 px-1.5 py-0.5 rounded bg-zinc-850 text-[10px] text-zinc-400">
                           {it}
                         </span>
                       ))}
@@ -369,44 +359,41 @@ export default function BeamsPushPage() {
       </div>
 
       {/* Push Deliveries History */}
-      <div className="glass-panel p-6 rounded-2xl shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-base font-semibold text-white">Push Publish History ({(deliveries || []).length})</h2>
-          </div>
-        </div>
+      <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-3">
+        <h2 className="text-sm font-semibold text-zinc-100">
+          Push Publish History ({(deliveries || []).length})
+        </h2>
 
         {(deliveries || []).length === 0 ? (
-          <div className="p-8 text-center text-xs text-slate-500">
+          <div className="p-6 text-center text-xs text-zinc-500">
             No push notifications published yet. Use the publisher above to send test pushes.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+              <thead className="text-[11px] uppercase tracking-wider text-zinc-400 border-b border-zinc-800">
                 <tr>
-                  <th className="pb-3 font-semibold">Publish ID</th>
-                  <th className="pb-3 font-semibold">Target Type</th>
-                  <th className="pb-3 font-semibold">Target</th>
-                  <th className="pb-3 font-semibold">Sent Count</th>
-                  <th className="pb-3 font-semibold">Status</th>
-                  <th className="pb-3 font-semibold">Timestamp</th>
+                  <th className="pb-2.5 font-medium">Publish ID</th>
+                  <th className="pb-2.5 font-medium">Target Type</th>
+                  <th className="pb-2.5 font-medium">Target</th>
+                  <th className="pb-2.5 font-medium">Sent Count</th>
+                  <th className="pb-2.5 font-medium">Status</th>
+                  <th className="pb-2.5 font-medium">Timestamp</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
+              <tbody className="divide-y divide-zinc-800/60 font-mono">
                 {(deliveries || []).map((del) => (
-                  <tr key={del.id} className="text-slate-300">
-                    <td className="py-3 font-semibold text-white">{del.publish_id}</td>
-                    <td className="py-3 uppercase text-[10px] text-slate-400">{del.target_type}</td>
-                    <td className="py-3 text-blue-400">{del.target}</td>
-                    <td className="py-3">{del.sent_count}</td>
-                    <td className="py-3">
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-sans font-medium">
+                  <tr key={del.id} className="text-zinc-300">
+                    <td className="py-2.5 font-medium text-zinc-200">{del.publish_id}</td>
+                    <td className="py-2.5 text-[10px] text-zinc-400 uppercase">{del.target_type}</td>
+                    <td className="py-2.5 text-zinc-300">{del.target}</td>
+                    <td className="py-2.5 text-zinc-300">{del.sent_count}</td>
+                    <td className="py-2.5">
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-900/50 text-emerald-400 text-[10px] font-medium font-sans">
                         {del.status}
                       </span>
                     </td>
-                    <td className="py-3 text-slate-400">{new Date(del.created_at).toLocaleTimeString()}</td>
+                    <td className="py-2.5 text-zinc-500 text-[11px]">{new Date(del.created_at).toLocaleTimeString()}</td>
                   </tr>
                 ))}
               </tbody>

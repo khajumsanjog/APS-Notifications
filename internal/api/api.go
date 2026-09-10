@@ -27,6 +27,10 @@ type BeamsBroadcaster interface {
 	PublishToInterest(ctx context.Context, instanceID, interest, title, body string, data map[string]interface{}) (string, error)
 }
 
+type WebhookNotifier interface {
+	Notify(ctx context.Context, appID, event string, data map[string]interface{})
+}
+
 type API struct {
 	store     store.Store
 	hub       *ws.Hub
@@ -34,6 +38,7 @@ type API struct {
 	beams     BeamsBroadcaster
 	masterKey []byte
 	jwtSecret string
+	webhook   WebhookNotifier
 }
 
 func NewAPI(st store.Store, hub *ws.Hub, ps pubsub.PubSub, beams BeamsBroadcaster, masterKey []byte, jwtSecret string) *API {
@@ -45,6 +50,10 @@ func NewAPI(st store.Store, hub *ws.Hub, ps pubsub.PubSub, beams BeamsBroadcaste
 		masterKey: masterKey,
 		jwtSecret: jwtSecret,
 	}
+}
+
+func (a *API) SetWebhook(wh WebhookNotifier) {
+	a.webhook = wh
 }
 
 func (a *API) Routes() http.Handler {
@@ -168,7 +177,14 @@ func (a *API) pusherAuthMiddleware(next http.Handler) http.Handler {
 				return
 			}
 
-			// 2. Check if it's an API key
+			// 2. Check if it's the App Key directly
+			if rawToken == app.AppKey {
+				ctx := context.WithValue(r.Context(), appContextKey, app)
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return
+			}
+
+			// 3. Check if it's an API key
 			apiKey, err := a.store.GetAPIKey(r.Context(), rawToken)
 			if err == nil && apiKey.AppID == app.ID {
 				ctx := context.WithValue(r.Context(), appContextKey, app)
@@ -238,6 +254,14 @@ func (a *API) handleTriggerEvent(w http.ResponseWriter, r *http.Request) {
 
 	for _, ch := range channels {
 		_ = a.hub.BroadcastCluster(app.ID, ch, req.Name, req.Data, excludeSocketID)
+		if a.webhook != nil {
+			a.webhook.Notify(r.Context(), app.ID, "message_sent", map[string]interface{}{
+				"channel":   ch,
+				"event":     req.Name,
+				"data":      req.Data,
+				"socket_id": excludeSocketID,
+			})
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -260,6 +284,14 @@ func (a *API) handleBatchEvents(w http.ResponseWriter, r *http.Request) {
 			excludeSocketID = *item.SocketID
 		}
 		_ = a.hub.BroadcastCluster(app.ID, item.Channel, item.Name, item.Data, excludeSocketID)
+		if a.webhook != nil {
+			a.webhook.Notify(r.Context(), app.ID, "message_sent", map[string]interface{}{
+				"channel":   item.Channel,
+				"event":     item.Name,
+				"data":      item.Data,
+				"socket_id": excludeSocketID,
+			})
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -386,6 +418,14 @@ func (a *API) handleUnifiedBroadcast(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Channel != "" && req.EventName != "" {
 		_ = a.hub.BroadcastCluster(app.ID, req.Channel, req.EventName, req.Data, excludeSocketID)
+		if a.webhook != nil {
+			a.webhook.Notify(r.Context(), app.ID, "message_sent", map[string]interface{}{
+				"channel":   req.Channel,
+				"event":     req.EventName,
+				"data":      req.Data,
+				"socket_id": excludeSocketID,
+			})
+		}
 	}
 
 	// 2. Deliver to Beams interest if requested

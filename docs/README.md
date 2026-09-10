@@ -87,3 +87,48 @@ APS supports three distinct authentication methods:
 3. **Bearer Tokens (Dashboard & Developer API)**:
    - Standard HTTP header: `Authorization: Bearer <jwt_or_api_key>`.
    - Used for console interactions, API keys, and dashboard administration.
+
+---
+
+## ⚡ Quick Examples Cheat Sheet
+
+### 1. Web Client (`pusher-js`)
+```javascript
+import Pusher from 'pusher-js';
+
+const pusher = new Pusher('aps_key_demo_12345', {
+  wsHost: 'localhost',
+  wsPort: 8080,
+  forceTLS: false,
+  cluster: 'mt1',
+});
+
+const channel = pusher.subscribe('donations');
+channel.bind('donation_received', (data) => console.log('Event:', data));
+```
+
+### 2. Backend Server (`Node.js`)
+```javascript
+const Pusher = require('pusher');
+
+const pusher = new Pusher({
+  appId: '100001',
+  key: 'aps_key_demo_12345',
+  secret: 'aps_secret_demo_67890',
+  host: 'localhost',
+  port: '8080',
+  useTLS: false,
+});
+
+pusher.trigger('donations', 'donation_received', { amount_npr: 5000 });
+```
+
+### 3. Send Push Notification via `curl`
+```bash
+curl -X POST http://localhost:8080/beams/beams_demo_instance/publishes/interests \
+  -H "Content-Type: application/json" \
+  -d '{
+    "interests": ["donations"],
+    "fcm": { "notification": { "title": "Update", "body": "New donation received!" } }
+  }'
+```

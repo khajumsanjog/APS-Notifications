@@ -60,9 +60,14 @@ type DeviceRegisterRequest struct {
 	Metadata  json.RawMessage `json:"metadata,omitempty"`
 }
 
+type WebhookNotifier interface {
+	Notify(ctx context.Context, appID, event string, data map[string]interface{})
+}
+
 type Service struct {
 	store     store.Store
 	masterKey []byte
+	webhook   WebhookNotifier
 }
 
 func NewService(st store.Store, masterKey []byte) *Service {
@@ -70,6 +75,18 @@ func NewService(st store.Store, masterKey []byte) *Service {
 		store:     st,
 		masterKey: masterKey,
 	}
+}
+
+func (s *Service) SetWebhook(wh WebhookNotifier) {
+	s.webhook = wh
+}
+
+func (s *Service) getAppIDForInstance(ctx context.Context, instanceID string) string {
+	inst, err := s.store.GetBeamsInstanceByID(ctx, instanceID)
+	if err != nil || inst == nil {
+		return ""
+	}
+	return inst.AppID
 }
 
 func (s *Service) Routes() http.Handler {
@@ -129,6 +146,18 @@ func (s *Service) handleRegisterFCM(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if s.webhook != nil {
+		if appID := s.getAppIDForInstance(r.Context(), instanceID); appID != "" {
+			s.webhook.Notify(r.Context(), appID, "beams_device_registered", map[string]interface{}{
+				"instance_id": instanceID,
+				"device_id":   deviceID,
+				"platform":    "fcm",
+				"user_id":     req.UserID,
+				"interests":   interests,
+			})
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(device)
@@ -163,6 +192,18 @@ func (s *Service) handleRegisterAPNs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if s.webhook != nil {
+		if appID := s.getAppIDForInstance(r.Context(), instanceID); appID != "" {
+			s.webhook.Notify(r.Context(), appID, "beams_device_registered", map[string]interface{}{
+				"instance_id": instanceID,
+				"device_id":   deviceID,
+				"platform":    "apns",
+				"user_id":     req.UserID,
+				"interests":   interests,
+			})
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(device)
@@ -170,7 +211,18 @@ func (s *Service) handleRegisterAPNs(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) handleDeleteDevice(w http.ResponseWriter, r *http.Request) {
 	deviceID := chi.URLParam(r, "device_id")
+	instanceID := chi.URLParam(r, "instance_id")
 	_ = s.store.DeleteDevice(r.Context(), deviceID)
+
+	if s.webhook != nil {
+		if appID := s.getAppIDForInstance(r.Context(), instanceID); appID != "" {
+			s.webhook.Notify(r.Context(), appID, "beams_device_deleted", map[string]interface{}{
+				"instance_id": instanceID,
+				"device_id":   deviceID,
+			})
+		}
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -234,6 +286,19 @@ func (s *Service) handlePublishInterests(w http.ResponseWriter, r *http.Request)
 		Status:      "completed",
 	})
 
+	if s.webhook != nil {
+		if appID := s.getAppIDForInstance(r.Context(), instanceID); appID != "" {
+			s.webhook.Notify(r.Context(), appID, "beams_push_delivered", map[string]interface{}{
+				"instance_id": instanceID,
+				"publish_id":  publishID,
+				"target_type": "interest",
+				"target":      strings.Join(req.Interests, ","),
+				"sent_count":  sentCount,
+				"status":      "completed",
+			})
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"publish_id": publishID,
@@ -271,6 +336,19 @@ func (s *Service) handlePublishUsers(w http.ResponseWriter, r *http.Request) {
 		FailedCount: 0,
 		Status:      "completed",
 	})
+
+	if s.webhook != nil {
+		if appID := s.getAppIDForInstance(r.Context(), instanceID); appID != "" {
+			s.webhook.Notify(r.Context(), appID, "beams_push_delivered", map[string]interface{}{
+				"instance_id": instanceID,
+				"publish_id":  publishID,
+				"target_type": "user",
+				"target":      strings.Join(req.Users, ","),
+				"sent_count":  sentCount,
+				"status":      "completed",
+			})
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{

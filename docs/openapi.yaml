@@ -254,7 +254,17 @@ components:
           type: array
           items:
             type: string
-          example: ["channel_occupied", "channel_vacated", "member_added", "member_removed", "client_event"]
+            enum:
+              - channel_occupied
+              - channel_vacated
+              - member_added
+              - member_removed
+              - client_event
+              - message_sent
+              - beams_push_delivered
+              - beams_device_registered
+              - beams_device_deleted
+          example: ["channel_occupied", "channel_vacated", "member_added", "member_removed", "client_event", "message_sent", "beams_push_delivered", "beams_device_registered", "beams_device_deleted"]
         secret:
           type: string
           example: "18b95df0162c43c198f7aecc5a3e9e6b"
@@ -981,7 +991,17 @@ paths:
                   type: array
                   items:
                     type: string
-                  example: ["channel_occupied", "channel_vacated", "member_added", "member_removed", "client_event"]
+                    enum:
+                      - channel_occupied
+                      - channel_vacated
+                      - member_added
+                      - member_removed
+                      - client_event
+                      - message_sent
+                      - beams_push_delivered
+                      - beams_device_registered
+                      - beams_device_deleted
+                  example: ["channel_occupied", "channel_vacated", "member_added", "member_removed", "client_event", "message_sent", "beams_push_delivered", "beams_device_registered", "beams_device_deleted"]
       responses:
         "201":
           description: Webhook created.

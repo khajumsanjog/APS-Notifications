@@ -92,9 +92,11 @@ func main() {
 
 	// Initialize Beams Push Service
 	beamsSvc := beams.NewService(st, masterKey)
+	beamsSvc.SetWebhook(whDispatcher)
 
 	// Initialize REST Control Plane API
 	apiSvc := api.NewAPI(st, hub, ps, beamsSvc, masterKey, cfg.JWTSecret)
+	apiSvc.SetWebhook(whDispatcher)
 
 	// Initialize WS Server
 	wsServer := ws.NewServer(hub, st, cfg.ActivityTimeout)

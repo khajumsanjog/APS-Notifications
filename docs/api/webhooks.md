@@ -6,34 +6,84 @@ APS supports HTTP POST webhook callbacks dispatched whenever channel events occu
 
 ## 1. Webhook Event Types
 
-APS can send callbacks for the following 5 events:
+APS supports callbacks across Channels, Messages, and Beams Push Notifications:
 
+### A. Messages & Channel Events
 | Event Type | Trigger Condition |
 | :--- | :--- |
+| `message_sent` | Triggered whenever an event or message is published to a channel (via REST API, batch API, or console). |
+| `client_event` | Triggered when a client dispatches a peer-to-peer `client-*` event over a private or presence channel. |
 | `channel_occupied` | Triggered when the first client subscribes to an empty channel. |
 | `channel_vacated` | Triggered when the last subscriber unsubscribes or disconnects from a channel. |
-| `member_added` | Triggered when a new user subscribes to a `presence-*` channel. |
-| `member_removed` | Triggered when a user leaves or disconnects from a `presence-*` channel. |
-| `client_event` | Triggered when a client dispatches a `client-*` event over a private/presence channel. |
+
+### B. Presence Events
+| Event Type | Trigger Condition |
+| :--- | :--- |
+| `member_added` | Triggered when a user joins and subscribes to a `presence-*` channel. |
+| `member_removed` | Triggered when a user disconnects or leaves a `presence-*` channel. |
+
+### C. APS Beams (Push Notifications)
+| Event Type | Trigger Condition |
+| :--- | :--- |
+| `beams_push_delivered` | Triggered whenever a push notification is successfully dispatched to device targets. |
+| `beams_device_registered` | Triggered when a new device registers an FCM or APNs token. |
+| `beams_device_deleted` | Triggered when a device token is deregistered or deleted. |
 
 ---
 
 ## 2. Webhook HTTP Payload Format
 
-APS dispatches an HTTP POST request to your registered webhook URL with the following JSON payload:
+APS dispatches an HTTP POST request to your registered webhook URL with a timestamp and an array of events:
 
+### Channel Message Webhook Example (`message_sent`)
 ```json
 {
-  "time_ms": 1788972000123,
+  "time_ms": 1788974510041,
   "events": [
     {
-      "name": "channel_occupied",
-      "channel": "presence-chat-room"
-    },
+      "name": "message_sent",
+      "channel": "orders",
+      "event": "order_created",
+      "data": {
+        "order_id": "ORD-9821",
+        "amount_npr": 1500
+      },
+      "socket_id": ""
+    }
+  ]
+}
+```
+
+### Beams Push Delivery Webhook Example (`beams_push_delivered`)
+```json
+{
+  "time_ms": 1788974513392,
+  "events": [
     {
-      "name": "member_added",
-      "channel": "presence-chat-room",
-      "user_id": "usr_1001"
+      "name": "beams_push_delivered",
+      "instance_id": "beams_demo_instance",
+      "publish_id": "pub_96415912d42b4458",
+      "target_type": "interest",
+      "target": "announcements",
+      "sent_count": 48,
+      "status": "completed"
+    }
+  ]
+}
+```
+
+### Beams Device Registered Webhook Example (`beams_device_registered`)
+```json
+{
+  "time_ms": 1788974515000,
+  "events": [
+    {
+      "name": "beams_device_registered",
+      "instance_id": "beams_demo_instance",
+      "device_id": "fcm-8d2a1bf9c4e20981aef10284",
+      "platform": "fcm",
+      "user_id": "usr_1001",
+      "interests": ["announcements", "donations"]
     }
   ]
 }

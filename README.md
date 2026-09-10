@@ -214,16 +214,33 @@ go build -o apsctl ./cmd/apsctl
 
 ---
 
-## 📚 Detailed Documentation
+## 📚 Complete Documentation Portal
 
-For full architectural breakdowns, security rules, and OpenAPI schemas:
+Explore our full documentation suite with copy-paste ready code:
 
+### 📱 Client SDKs
+- [**Android SDK Guide (Kotlin & Java)**](docs/client-sdks/android.md) — Cleartext `10.0.2.2` config, `pusher-java-client`, private/presence channels, Beams FCM.
+- [**JavaScript & Web SDK Guide**](docs/client-sdks/javascript.md) — `pusher-js`, custom React hooks (`useApsChannel`), SSR setup, private/presence auth.
+- [**iOS Swift SDK Guide**](docs/client-sdks/ios.md) — `PusherSwift`, SPM, CocoaPods, private/presence channels, and APNs Beams push.
+- [**Flutter SDK Guide**](docs/client-sdks/flutter.md) — `pusher_channels_flutter`, permissions, StreamController architecture, background FCM push.
+
+### 🖥️ Server SDKs
+- [**PHP & Laravel Broadcasting Guide**](docs/server-sdks/php.md) — Native `broadcasting.php` driver, channel authorization, batch triggers, cPanel compatibility.
+- [**Node.js & TypeScript Server Guide**](docs/server-sdks/nodejs.md) — `pusher` npm package, batch triggers, `socket_id` exclusion, webhook HMAC verification.
+- [**Python Server Guide**](docs/server-sdks/python.md) — `pusher` Python SDK, FastAPI/Django/Flask auth routes, channel queries, webhook validation.
+
+### 📡 Protocols & API Reference
+- [**Documentation Portal & Architecture**](docs/README.md)
 - [**OpenAPI 3.0 Specification (Swagger)**](docs/openapi.yaml)
-- [**Documentation Overview & Architecture**](docs/README.md)
 - [**Pusher Channels & WebSocket Protocol Guide**](docs/api/pusher-channels.md)
 - [**APS Beams Push Notification Guide**](docs/api/beams-push.md)
 - [**Developer Console Control Plane Reference**](docs/api/dashboard-control-plane.md)
-- [**Webhooks & Dead-Letter Replay Reference**](docs/api/webhooks.md) *(Channel occupancy, presence, client & server messages, Beams push delivery & device registration)*
+- [**Webhooks & Dead-Letter Replay Reference**](docs/api/webhooks.md)
+
+### 🚀 Deployment & Cloud Guides
+- [**cPanel Shared Hosting Architecture & FAQ**](docs/deployment/cpanel-shared-hosting.md) — Why shared hosting can't run WebSockets directly, and the proven hybrid architecture.
+- [**AWS EC2 & Ubuntu VPS Deployment Guide**](docs/deployment/ec2-ubuntu.md) — Sizing (`t4g.micro`), systemd daemon, Caddy auto-TLS reverse proxy.
+- [**Docker Compose Production Guide**](docs/deployment/docker-compose.md) — PostgreSQL 16, Redis 7, Caddy auto-TLS, horizontal WebSocket scaling.
 
 ---
 
@@ -234,4 +251,4 @@ Deploy the entire production stack (Caddy TLS, Redis 7, PostgreSQL 16, WebSocket
 ```bash
 docker compose -f deploy/docker-compose.yml up -d
 ```
-All certificates are automatically issued and managed via Caddy for `aps.khajumsanjog.com`.
+Developed by Khajumsanjog with ❤️.

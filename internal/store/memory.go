@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"slices"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -378,8 +380,22 @@ func (s *MemoryStore) GetChannelHistory(ctx context.Context, appID, channelName 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	key := appID + ":" + channelName
-	list := s.channelHistory[key]
+	var list []*models.ChannelMessage
+	if channelName != "" {
+		key := appID + ":" + channelName
+		list = s.channelHistory[key]
+	} else {
+		prefix := appID + ":"
+		for k, msgs := range s.channelHistory {
+			if strings.HasPrefix(k, prefix) {
+				list = append(list, msgs...)
+			}
+		}
+		sort.Slice(list, func(i, j int) bool {
+			return list[i].CreatedAt.Before(list[j].CreatedAt)
+		})
+	}
+
 	if limit <= 0 || limit > len(list) {
 		limit = len(list)
 	}

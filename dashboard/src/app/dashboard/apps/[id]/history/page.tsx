@@ -50,31 +50,31 @@ export default function MessageHistoryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">Message History & Replay</h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-zinc-100 tracking-tight">Message History & Replay</h1>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Retrieve past channel events for late-joining clients via REST API or replay on demand.
           </p>
         </div>
       </div>
 
       {/* Channel Query Bar */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 p-3.5 rounded-xl">
+      <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-3.5 rounded-xl">
         <form onSubmit={handleSearch} className="flex gap-2.5">
           <div className="relative flex-1">
-            <Radio className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+            <Radio className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3 top-2.5" />
             <input
               type="text"
               required
               value={channel}
               onChange={(e) => setChannel(e.target.value)}
               placeholder="Enter channel name..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 text-xs font-mono placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 text-xs font-mono placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-slate-400 dark:focus:border-zinc-500 transition"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="px-3.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-950 text-xs font-medium transition cursor-pointer flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             <Search className="w-3 h-3" />
             <span>{loading ? "Searching..." : "Fetch History"}</span>
@@ -83,38 +83,38 @@ export default function MessageHistoryPage() {
       </div>
 
       {/* Messages Feed */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-100">
-          Events for <span className="font-mono text-zinc-300">#{channel}</span> ({(messages || []).length})
+      <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-5 rounded-xl space-y-3">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
+          Events for <span className="font-mono text-slate-700 dark:text-zinc-300">#{channel}</span> ({(messages || []).length})
         </h2>
 
         {(messages || []).length === 0 ? (
-          <div className="p-6 text-center text-xs text-zinc-500">
-            No historical messages found for this channel. Messages published to <span className="font-mono text-zinc-400">#{channel}</span> will appear here.
+          <div className="p-6 text-center text-xs text-slate-500 dark:text-zinc-500">
+            No historical messages found for this channel. Messages published to <span className="font-mono text-slate-600 dark:text-zinc-400">#{channel}</span> will appear here.
           </div>
         ) : (
           <div className="space-y-2.5 font-mono text-xs">
             {(messages || []).map((m) => (
               <div
                 key={m.id}
-                className="p-3.5 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-2 hover:border-zinc-700/80 transition"
+                className="p-3.5 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 space-y-2 hover:border-slate-300 dark:hover:border-zinc-700/80 transition"
               >
                 <div className="flex items-center justify-between text-[11px]">
                   <div className="flex items-center gap-2">
-                    <span className="px-1.5 py-0.5 rounded bg-zinc-850 text-zinc-300 font-medium">
+                    <span className="px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/70 border border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-200 font-mono text-xs font-semibold shadow-2xs">
                       {m.event_name}
                     </span>
                     {m.socket_id && (
-                      <span className="text-zinc-500">socket: {m.socket_id}</span>
+                      <span className="text-slate-500 dark:text-zinc-400 font-mono text-[11px]">socket: {m.socket_id}</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-zinc-500 text-[10px]">
+                  <div className="flex items-center gap-1 text-slate-500 dark:text-zinc-400 text-[10px]">
                     <Clock className="w-2.5 h-2.5" />
                     <span>{new Date(m.created_at).toLocaleString()}</span>
                   </div>
                 </div>
 
-                <pre className="text-[11px] text-zinc-400 overflow-x-auto bg-zinc-900/60 p-2.5 rounded border border-zinc-850 leading-relaxed">
+                <pre className="text-[11px] text-slate-800 dark:text-zinc-300 overflow-x-auto bg-slate-100 dark:bg-zinc-900/80 p-2.5 rounded border border-slate-200 dark:border-zinc-800 leading-relaxed">
                   <code>
                     {(() => {
                       try {

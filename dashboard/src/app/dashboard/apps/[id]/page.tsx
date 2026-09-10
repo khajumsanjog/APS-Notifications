@@ -23,7 +23,7 @@ export default function AppOverviewPage() {
   const [stats, setStats] = useState<any>(null);
   const [showSecret, setShowSecret] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"js" | "node" | "python" | "go" | "curl">("js");
+  const [activeTab, setActiveTab] = useState<"js" | "android" | "ios" | "flutter" | "node" | "php" | "python" | "go" | "curl">("js");
 
   useEffect(() => {
     if (!appId) return;
@@ -91,6 +91,54 @@ channel.bind('new-message', (data) => {
   console.log('Received real-time event:', data);
 });`,
 
+    android: `// 1. In build.gradle.kts: implementation("com.pusher:pusher-java-client:2.4.4")
+val options = PusherOptions().apply {
+  setCluster('${app.cluster}')
+  setHost('${host}')
+  setWsPort(${WS_PORT})
+  setWssPort(443)
+  isUseTLS = false
+}
+
+val pusher = Pusher('${app.app_key}', options)
+pusher.connect()
+
+val channel = pusher.subscribe('chat-room')
+channel.bind('new-message') { event ->
+  Log.d("APS", "Event data: \${event.data}")
+}`,
+
+    ios: `// Swift Package Manager: https://github.com/pusher/pusher-websocket-swift
+import PusherSwift
+
+let options = PusherClientOptions(
+  host: .host("${host}"),
+  port: ${WS_PORT},
+  useTLS: false,
+  cluster: "${app.cluster}"
+)
+let pusher = Pusher(key: "${app.app_key}", options: options)
+let channel = pusher.subscribe("chat-room")
+let _ = channel.bind(eventName: "new-message") { event in
+  print("Received event: \\(event.data ?? "")")
+}
+pusher.connect()`,
+
+    flutter: `// pubspec.yaml: pusher_channels_flutter: ^2.2.1
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
+
+final pusher = PusherChannelsFlutter.getInstance();
+await pusher.init(
+  apiKey: "${app.app_key}",
+  cluster: "${app.cluster}",
+  host: "${host}",
+  wsPort: ${WS_PORT},
+  useTLS: false,
+  onEvent: (event) => print("Event: \${event.data}"),
+);
+await pusher.subscribe(channelName: "chat-room");
+await pusher.connect();`,
+
     node: `const Pusher = require('pusher');
 
 const pusher = new Pusher({
@@ -106,6 +154,23 @@ pusher.trigger('chat-room', 'new-message', {
   message: 'Hello world from Node.js via APS!',
   timestamp: Date.now()
 });`,
+
+    php: `<?php
+// composer require pusher/pusher-php-server
+require __DIR__ . '/vendor/autoload.php';
+
+$pusher = new Pusher\\Pusher('${app.app_key}', '${app.app_secret || "your-app-secret"}', '${app.id}', [
+  'cluster' => '${app.cluster}',
+  'host' => '${host}',
+  'port' => ${WS_PORT},
+  'scheme' => 'http',
+  'useTLS' => false
+]);
+
+$pusher->trigger('chat-room', 'new-message', [
+  'author' => 'Alice',
+  'text' => 'Hello from PHP via APS!'
+]);`,
 
     python: `from pusher import Pusher
 
@@ -157,12 +222,12 @@ func main() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">{app.name}</h1>
-          <p className="text-xs text-zinc-400 mt-1 font-mono">
-            App ID: <span className="text-zinc-300">{app.id}</span> · Cluster: <span className="text-zinc-300">{app.cluster}</span>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight">{app.name}</h1>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 font-mono">
+            App ID: <span className="text-slate-700 dark:text-zinc-300 font-semibold">{app.id}</span> · Cluster: <span className="text-slate-700 dark:text-zinc-300 font-semibold">{app.cluster}</span>
           </p>
         </div>
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 font-medium">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs text-slate-700 dark:text-zinc-300 font-medium">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>Active</span>
         </div>
@@ -170,120 +235,120 @@ func main() {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl">
-          <div className="flex items-center justify-between text-zinc-400 mb-1.5">
+        <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-4 rounded-xl">
+          <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400 mb-1.5">
             <span className="text-xs font-medium">Active Sockets</span>
-            <Activity className="w-3.5 h-3.5 text-zinc-500" />
+            <Activity className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
           </div>
-          <div className="text-2xl font-semibold text-zinc-100 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 font-mono tracking-tight">
             {stats?.active_connections ?? 0}
           </div>
-          <div className="text-[11px] text-zinc-500 mt-1">Live WebSocket connections</div>
+          <div className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1">Live WebSocket connections</div>
         </div>
 
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl">
-          <div className="flex items-center justify-between text-zinc-400 mb-1.5">
+        <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-4 rounded-xl">
+          <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400 mb-1.5">
             <span className="text-xs font-medium">Occupied Channels</span>
-            <Radio className="w-3.5 h-3.5 text-zinc-500" />
+            <Radio className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
           </div>
-          <div className="text-2xl font-semibold text-zinc-100 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 font-mono tracking-tight">
             {stats?.occupied_channels ?? 0}
           </div>
-          <div className="text-[11px] text-zinc-500 mt-1">Channels with active listeners</div>
+          <div className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1">Channels with active listeners</div>
         </div>
 
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-xl">
-          <div className="flex items-center justify-between text-zinc-400 mb-1.5">
+        <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-4 rounded-xl">
+          <div className="flex items-center justify-between text-slate-500 dark:text-zinc-400 mb-1.5">
             <span className="text-xs font-medium">Presence Users</span>
-            <Users className="w-3.5 h-3.5 text-zinc-500" />
+            <Users className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
           </div>
-          <div className="text-2xl font-semibold text-zinc-100 font-mono tracking-tight">
+          <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 font-mono tracking-tight">
             {stats?.presence_users ?? 0}
           </div>
-          <div className="text-[11px] text-zinc-500 mt-1">Online presence members</div>
+          <div className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1">Online presence members</div>
         </div>
       </div>
 
       {/* Credentials Card */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-4">
+      <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-5 rounded-xl space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-100">API Credentials</h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">API Credentials</h2>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Use these keys with official Pusher client and server libraries.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1">
               App ID
             </label>
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-mono text-slate-800 dark:text-zinc-200">
               <span>{app.id}</span>
               <button
                 onClick={() => copyToClipboard(app.id, "id")}
-                className="text-zinc-500 hover:text-zinc-300 transition cursor-pointer p-0.5"
+                className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition cursor-pointer p-0.5"
                 title="Copy App ID"
               >
-                {copiedKey === "id" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedKey === "id" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1">
               Cluster Region
             </label>
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-mono text-slate-800 dark:text-zinc-200">
               <span>{app.cluster}</span>
               <button
                 onClick={() => copyToClipboard(app.cluster, "cluster")}
-                className="text-zinc-500 hover:text-zinc-300 transition cursor-pointer p-0.5"
+                className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition cursor-pointer p-0.5"
                 title="Copy Cluster"
               >
-                {copiedKey === "cluster" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedKey === "cluster" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1">
               App Key (Public)
             </label>
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-mono text-slate-800 dark:text-zinc-200">
               <span className="truncate mr-2">{app.app_key}</span>
               <button
                 onClick={() => copyToClipboard(app.app_key, "key")}
-                className="text-zinc-500 hover:text-zinc-300 transition cursor-pointer shrink-0 p-0.5"
+                className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition cursor-pointer shrink-0 p-0.5"
                 title="Copy App Key"
               >
-                {copiedKey === "key" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedKey === "key" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+            <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1">
               App Secret (Private)
             </label>
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-mono text-slate-800 dark:text-zinc-200">
               <span className="truncate mr-2">
                 {showSecret ? app.app_secret : "••••••••••••••••••••••••"}
               </span>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() => setShowSecret(!showSecret)}
-                  className="text-zinc-500 hover:text-zinc-300 transition cursor-pointer p-0.5"
+                  className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition cursor-pointer p-0.5"
                   title={showSecret ? "Hide secret" : "Show secret"}
                 >
                   {showSecret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
                 <button
                   onClick={() => copyToClipboard(app.app_secret, "sec")}
-                  className="text-zinc-500 hover:text-zinc-300 transition cursor-pointer p-0.5"
+                  className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition cursor-pointer p-0.5"
                   title="Copy App Secret"
                 >
-                  {copiedKey === "sec" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedKey === "sec" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
@@ -292,21 +357,21 @@ func main() {
       </div>
 
       {/* Code Snippets Section */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-4">
+      <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-5 rounded-xl space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100">SDK Quickstart</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">SDK Quickstart</h2>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
               Copy-paste drop-in snippets pre-configured with your active credentials.
             </p>
           </div>
           <button
             onClick={() => copyToClipboard(snippets[activeTab], "snippet")}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-medium transition cursor-pointer"
           >
             {copiedKey === "snippet" ? (
               <>
-                <Check className="w-3 h-3 text-emerald-400" />
+                <Check className="w-3 h-3 text-emerald-500" />
                 <span>Copied</span>
               </>
             ) : (
@@ -319,21 +384,29 @@ func main() {
         </div>
 
         {/* Tab Controls */}
-        <div className="flex gap-1 p-1 rounded-lg bg-zinc-950 border border-zinc-800/80 w-fit text-xs font-medium">
-          {(["js", "node", "python", "go", "curl"] as const).map((tab) => (
+        <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 w-fit text-xs font-medium">
+          {(["js", "android", "ios", "flutter", "node", "php", "python", "go", "curl"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-3 py-1 rounded-md transition cursor-pointer ${
                 activeTab === tab
-                  ? "bg-zinc-800 text-zinc-100 font-medium"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 font-semibold shadow-xs"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
               }`}
             >
               {tab === "js"
                 ? "JavaScript (Browser)"
+                : tab === "android"
+                ? "Android (Kotlin)"
+                : tab === "ios"
+                ? "iOS (Swift)"
+                : tab === "flutter"
+                ? "Flutter"
                 : tab === "node"
                 ? "Node.js"
+                : tab === "php"
+                ? "PHP / Laravel"
                 : tab === "python"
                 ? "Python"
                 : tab === "go"
@@ -344,7 +417,7 @@ func main() {
         </div>
 
         {/* Code Box */}
-        <pre className="p-4 rounded-lg bg-zinc-950 border border-zinc-800/80 text-xs font-mono text-zinc-300 overflow-x-auto leading-relaxed">
+        <pre className="p-4 rounded-lg bg-[#0d1117] border border-slate-800 dark:border-zinc-800 text-xs font-mono text-gray-100 overflow-x-auto leading-relaxed shadow-xs">
           <code>{snippets[activeTab]}</code>
         </pre>
       </div>

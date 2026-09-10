@@ -148,14 +148,14 @@ export default function BeamsPushPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">APS Beams Push Notifications</h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-zinc-100 tracking-tight">APS Beams Push Notifications</h1>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Deliver mobile push notifications via FCM (Android) and APNs (iOS) with interest topics or authenticated user IDs.
           </p>
         </div>
 
-        <div className="text-xs font-mono px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400">
-          Instance: <span className="text-zinc-200">{beamsInstance?.instance_id || "None"}</span>
+        <div className="text-xs font-mono px-2.5 py-1 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400">
+          Instance: <span className="text-slate-900 dark:text-zinc-200 font-semibold">{beamsInstance?.instance_id || "None"}</span>
         </div>
       </div>
 
@@ -163,11 +163,11 @@ export default function BeamsPushPage() {
         <div
           className={`p-3 rounded-lg flex items-center gap-2 text-xs border ${
             feedback.success
-              ? "bg-emerald-950/30 border-emerald-900/50 text-emerald-300"
-              : "bg-red-950/30 border-red-900/50 text-red-300"
+              ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300"
+              : "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50 text-red-800 dark:text-red-300"
           }`}
         >
-          {feedback.success ? <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" /> : <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />}
+          {feedback.success ? <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" /> : <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />}
           <span>{feedback.msg}</span>
         </div>
       )}
@@ -175,25 +175,25 @@ export default function BeamsPushPage() {
       {/* Main 2-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Publish Notification */}
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-4">
+        <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-5 rounded-xl space-y-4">
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100">Publish Notification</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">Send a test notification to subscribers or individual users.</p>
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Publish Notification</h2>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Send a test notification to subscribers or individual users.</p>
           </div>
 
           <form onSubmit={handleSendPush} className="space-y-3.5">
             <div>
-              <label className="block text-[11px] font-medium text-zinc-400 mb-1.5">
+              <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1.5">
                 Targeting Type
               </label>
-              <div className="grid grid-cols-2 gap-2 p-0.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs font-medium">
+              <div className="grid grid-cols-2 gap-2 p-0.5 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-medium">
                 <button
                   type="button"
                   onClick={() => setTargetType("interest")}
                   className={`py-1.5 rounded-md transition cursor-pointer ${
                     targetType === "interest"
-                      ? "bg-zinc-800 text-zinc-100 shadow-xs"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-xs"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
                   }`}
                 >
                   Interest (Topic)
@@ -203,8 +203,8 @@ export default function BeamsPushPage() {
                   onClick={() => setTargetType("user")}
                   className={`py-1.5 rounded-md transition cursor-pointer ${
                     targetType === "user"
-                      ? "bg-zinc-800 text-zinc-100 shadow-xs"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-xs"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
                   }`}
                 >
                   Authenticated User ID
@@ -213,7 +213,7 @@ export default function BeamsPushPage() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+              <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1">
                 {targetType === "interest" ? "Interest Name" : "User ID"}
               </label>
               <input
@@ -222,12 +222,12 @@ export default function BeamsPushPage() {
                 value={targetValue}
                 onChange={(e) => setTargetValue(e.target.value)}
                 placeholder={targetType === "interest" ? "e.g. announcements" : "e.g. usr_1001"}
-                className="w-full px-3 py-1.5 text-xs rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-zinc-500 transition"
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 font-mono focus:outline-none focus:border-purple-600 dark:focus:border-zinc-500 transition"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+              <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1">
                 Notification Title
               </label>
               <input
@@ -235,12 +235,12 @@ export default function BeamsPushPage() {
                 required
                 value={pushTitle}
                 onChange={(e) => setPushTitle(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500 transition"
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-purple-600 dark:focus:border-zinc-500 transition"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+              <label className="block text-[11px] font-medium text-slate-600 dark:text-zinc-400 mb-1">
                 Message Body
               </label>
               <textarea
@@ -248,14 +248,14 @@ export default function BeamsPushPage() {
                 required
                 value={pushBody}
                 onChange={(e) => setPushBody(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:border-zinc-500 transition leading-relaxed"
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-purple-600 dark:focus:border-zinc-500 transition leading-relaxed"
               />
             </div>
 
             <button
               type="submit"
               disabled={sending}
-              className="w-full py-2 px-3 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-medium transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs"
+              className="w-full py-2 px-3 rounded-lg bg-[#6941C6] hover:bg-[#592fa9] text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-950 text-xs font-medium transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs"
             >
               <Send className="w-3 h-3" />
               <span>{sending ? "Publishing..." : "Publish Notification"}</span>
@@ -264,18 +264,18 @@ export default function BeamsPushPage() {
         </div>
 
         {/* Credentials Manager */}
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-4">
+        <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-5 rounded-xl space-y-4">
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100">Push Gateway Credentials</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Push Gateway Credentials</h2>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
               Encrypted AES-256-GCM storage. Simulation mode active for local development.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-2">
+          <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-zinc-200">Firebase Cloud Messaging (FCM)</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-850 text-zinc-400 text-[10px] font-mono">
+              <span className="font-semibold text-slate-900 dark:text-zinc-200">Firebase Cloud Messaging (FCM)</span>
+              <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-300 text-[10px] font-mono">
                 {beamsInstance?.has_fcm || fcmStatus ? "Configured" : "Dev Simulation"}
               </span>
             </div>
@@ -285,25 +285,25 @@ export default function BeamsPushPage() {
                 value={fcmJSON}
                 onChange={(e) => setFcmJSON(e.target.value)}
                 placeholder='Paste Firebase service-account.json...'
-                className="w-full p-2 text-[11px] font-mono rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 focus:outline-none focus:border-zinc-500 transition"
+                className="w-full p-2 text-[11px] font-mono rounded-md bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-300 focus:outline-none focus:border-purple-600 dark:focus:border-zinc-500 transition"
               />
               <button
                 type="submit"
-                className="py-1.5 px-3 rounded-md bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200 transition cursor-pointer font-medium"
+                className="py-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs text-white dark:text-zinc-200 transition cursor-pointer font-medium shadow-xs"
               >
                 Save FCM Service Account
               </button>
             </form>
           </div>
 
-          <div className="p-3.5 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-1.5">
+          <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-zinc-200">Apple Push Notifications (APNs)</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-850 text-zinc-400 text-[10px] font-mono">
+              <span className="font-semibold text-slate-900 dark:text-zinc-200">Apple Push Notifications (APNs)</span>
+              <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-300 text-[10px] font-mono">
                 {beamsInstance?.has_apns ? "Configured" : "Dev Simulation"}
               </span>
             </div>
-            <p className="text-[11px] text-zinc-500 leading-normal">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-500 leading-normal">
               Supports .p8 Auth Key with token-based HTTP/2 connection pooling.
             </p>
           </div>
@@ -311,19 +311,19 @@ export default function BeamsPushPage() {
       </div>
 
       {/* Registered Devices Table */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-100">
+      <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-5 rounded-xl space-y-3">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
           Registered Devices ({(devices || []).length})
         </h2>
 
         {(devices || []).length === 0 ? (
-          <div className="p-6 text-center text-xs text-zinc-500">
-            No devices registered yet. Devices register via <span className="font-mono text-zinc-400">POST /beams/{'{instance_id}'}/devices/*/register</span>.
+          <div className="p-6 text-center text-xs text-slate-500 dark:text-zinc-500">
+            No devices registered yet. Devices register via <span className="font-mono text-slate-600 dark:text-zinc-400">POST /beams/{'{instance_id}'}/devices/*/register</span>.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase tracking-wider text-zinc-400 border-b border-zinc-800">
+              <thead className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 border-b border-slate-200 dark:border-zinc-800">
                 <tr>
                   <th className="pb-2.5 font-medium">Device ID</th>
                   <th className="pb-2.5 font-medium">Platform</th>
@@ -332,20 +332,20 @@ export default function BeamsPushPage() {
                   <th className="pb-2.5 font-medium">Interests</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/60 font-mono">
+              <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 font-mono">
                 {(devices || []).map((d) => (
-                  <tr key={d.device_id} className="text-zinc-300">
-                    <td className="py-2.5 text-zinc-200">{d.device_id}</td>
+                  <tr key={d.device_id} className="text-slate-700 dark:text-zinc-300">
+                    <td className="py-2.5 text-slate-900 dark:text-zinc-200 font-medium">{d.device_id}</td>
                     <td className="py-2.5">
-                      <span className="px-1.5 py-0.5 rounded bg-zinc-850 text-zinc-400 text-[10px] uppercase font-semibold">
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 text-[10px] uppercase font-semibold">
                         {d.platform}
                       </span>
                     </td>
-                    <td className="py-2.5 text-zinc-500 truncate max-w-xs">{d.token}</td>
-                    <td className="py-2.5 text-zinc-400">{d.user_id || "—"}</td>
+                    <td className="py-2.5 text-slate-500 dark:text-zinc-500 truncate max-w-xs">{d.token}</td>
+                    <td className="py-2.5 text-slate-600 dark:text-zinc-400">{d.user_id || "—"}</td>
                     <td className="py-2.5">
                       {d.interests?.map((it: string) => (
-                        <span key={it} className="mr-1 px-1.5 py-0.5 rounded bg-zinc-850 text-[10px] text-zinc-400">
+                        <span key={it} className="mr-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-[10px] text-slate-700 dark:text-zinc-300">
                           {it}
                         </span>
                       ))}
@@ -359,41 +359,47 @@ export default function BeamsPushPage() {
       </div>
 
       {/* Push Deliveries History */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-xl space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-100">
+      <div className="bg-white dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/80 shadow-xs p-5 rounded-xl space-y-3">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
           Push Publish History ({(deliveries || []).length})
         </h2>
 
         {(deliveries || []).length === 0 ? (
-          <div className="p-6 text-center text-xs text-zinc-500">
+          <div className="p-6 text-center text-xs text-slate-500 dark:text-zinc-500">
             No push notifications published yet. Use the publisher above to send test pushes.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase tracking-wider text-zinc-400 border-b border-zinc-800">
+              <thead className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-zinc-400 border-b border-slate-200 dark:border-zinc-800">
                 <tr>
                   <th className="pb-2.5 font-medium">Publish ID</th>
                   <th className="pb-2.5 font-medium">Target Type</th>
                   <th className="pb-2.5 font-medium">Target</th>
                   <th className="pb-2.5 font-medium">Sent Count</th>
                   <th className="pb-2.5 font-medium">Status</th>
-                  <th className="pb-2.5 font-medium">Timestamp</th>
+                  <th className="pb-2.5 font-medium">Time</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/60 font-mono">
-                {(deliveries || []).map((del) => (
-                  <tr key={del.id} className="text-zinc-300">
-                    <td className="py-2.5 font-medium text-zinc-200">{del.publish_id}</td>
-                    <td className="py-2.5 text-[10px] text-zinc-400 uppercase">{del.target_type}</td>
-                    <td className="py-2.5 text-zinc-300">{del.target}</td>
-                    <td className="py-2.5 text-zinc-300">{del.sent_count}</td>
+              <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 font-mono">
+                {(deliveries || []).map((pub) => (
+                  <tr key={pub.id} className="text-slate-700 dark:text-zinc-300">
+                    <td className="py-2.5 text-slate-900 dark:text-zinc-200">{pub.id}</td>
                     <td className="py-2.5">
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-950/40 border border-emerald-900/50 text-emerald-400 text-[10px] font-medium font-sans">
-                        {del.status}
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 text-[10px] font-sans font-medium">
+                        {pub.target_type}
                       </span>
                     </td>
-                    <td className="py-2.5 text-zinc-500 text-[11px]">{new Date(del.created_at).toLocaleTimeString()}</td>
+                    <td className="py-2.5 text-slate-800 dark:text-zinc-300">{pub.target_value}</td>
+                    <td className="py-2.5 text-slate-600 dark:text-zinc-400">{pub.sent_count} devices</td>
+                    <td className="py-2.5">
+                      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-[11px] font-sans">
+                        <CheckCircle className="w-3 h-3" /> Dispatched
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-slate-500 dark:text-zinc-500 text-[11px]">
+                      {new Date(pub.created_at).toLocaleTimeString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>

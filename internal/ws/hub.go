@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/khajumsanjog/aps/internal/auth"
 	"github.com/khajumsanjog/aps/internal/crypto"
 	"github.com/khajumsanjog/aps/internal/models"
@@ -19,6 +20,7 @@ type WebhookNotifier interface {
 }
 
 type BroadcastPayload struct {
+	NodeID      string          `json:"node_id,omitempty"`
 	AppID       string          `json:"app_id"`
 	ChannelName string          `json:"channel_name"`
 	EventName   string          `json:"event_name"`
@@ -27,6 +29,7 @@ type BroadcastPayload struct {
 }
 
 type Hub struct {
+	nodeID       string
 	store        store.Store
 	pubsub       pubsub.PubSub
 	webhook      WebhookNotifier
@@ -44,6 +47,7 @@ type Hub struct {
 func NewHub(st store.Store, ps pubsub.PubSub, masterKey []byte, wh WebhookNotifier) *Hub {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Hub{
+		nodeID:        uuid.New().String(),
 		store:         st,
 		pubsub:        ps,
 		webhook:       wh,
@@ -217,6 +221,7 @@ func (h *Hub) Subscribe(client *Client, payload SubscribePayload) {
 
 		// Publish to cluster as well
 		clusterPayload, _ := json.Marshal(BroadcastPayload{
+			NodeID:      h.nodeID,
 			AppID:       client.appID,
 			ChannelName: channelName,
 			EventName:   "pusher_internal:member_added",
@@ -274,6 +279,7 @@ func (h *Hub) Unsubscribe(client *Client, channelName string) {
 			h.BroadcastLocal(client.appID, channelName, "pusher_internal:member_removed", memberRemovedPayload, client.socketID)
 
 			clusterPayload, _ := json.Marshal(BroadcastPayload{
+				NodeID:      h.nodeID,
 				AppID:       client.appID,
 				ChannelName: channelName,
 				EventName:   "pusher_internal:member_removed",
@@ -324,6 +330,7 @@ func (h *Hub) HandleClientEvent(client *Client, channelName, event string, rawDa
 	// Publish to Redis/cluster for other nodes
 	channelKey := client.appID + ":" + channelName
 	clusterPayload, _ := json.Marshal(BroadcastPayload{
+		NodeID:      h.nodeID,
 		AppID:       client.appID,
 		ChannelName: channelName,
 		EventName:   event,
@@ -347,20 +354,35 @@ func (h *Hub) HandleClientEvent(client *Client, channelName, event string, rawDa
 // BroadcastLocal sends an event to all local subscribers of a channel (optionally excluding socketID)
 func (h *Hub) BroadcastLocal(appID, channelName, event string, data interface{}, excludeSocketID string) {
 	channelKey := appID + ":" + channelName
+	wildcardKey := appID + ":*"
 
 	h.mu.RLock()
-	subs, ok := h.channels[channelKey]
-	if !ok {
-		h.mu.RUnlock()
-		return
-	}
+	subs := h.channels[channelKey]
+	wildcardSubs := h.channels[wildcardKey]
 
-	clients := make([]*Client, 0, len(subs))
+	seen := make(map[*Client]bool)
+	clients := make([]*Client, 0, len(subs)+len(wildcardSubs))
+
 	for c := range subs {
 		if excludeSocketID != "" && c.socketID == excludeSocketID {
 			continue
 		}
-		clients = append(clients, c)
+		if !seen[c] {
+			seen[c] = true
+			clients = append(clients, c)
+		}
+	}
+
+	if channelName != "*" {
+		for c := range wildcardSubs {
+			if excludeSocketID != "" && c.socketID == excludeSocketID {
+				continue
+			}
+			if !seen[c] {
+				seen[c] = true
+				clients = append(clients, c)
+			}
+		}
 	}
 	h.mu.RUnlock()
 
@@ -386,6 +408,7 @@ func (h *Hub) BroadcastCluster(appID, channelName, event string, data json.RawMe
 	// 2. Publish to cluster topic
 	channelKey := appID + ":" + channelName
 	clusterPayload, err := json.Marshal(BroadcastPayload{
+		NodeID:      h.nodeID,
 		AppID:       appID,
 		ChannelName: channelName,
 		EventName:   event,
@@ -417,6 +440,10 @@ func (h *Hub) ensurePubSubSubscription(appID, channelName string) {
 		for msg := range ch {
 			var bp BroadcastPayload
 			if err := json.Unmarshal(msg.Payload, &bp); err != nil {
+				continue
+			}
+			// Skip if this message originated from this same hub instance (already broadcast locally)
+			if bp.NodeID != "" && bp.NodeID == h.nodeID {
 				continue
 			}
 			h.BroadcastLocal(bp.AppID, bp.ChannelName, bp.EventName, bp.Data, bp.SocketID)

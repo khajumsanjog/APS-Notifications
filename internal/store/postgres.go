@@ -449,14 +449,29 @@ func (s *PostgresStore) GetChannelHistory(ctx context.Context, appID, channelNam
 	if limit <= 0 {
 		limit = 50
 	}
-	query := `
-		SELECT id, app_id, channel_name, event_name, payload, COALESCE(socket_id, ''), created_at
-		FROM channel_history
-		WHERE app_id = $1 AND channel_name = $2
-		ORDER BY created_at DESC
-		LIMIT $3;
-	`
-	rows, err := s.pool.Query(ctx, query, appID, channelName, limit)
+	var query string
+	var rows pgx.Rows
+	var err error
+
+	if channelName != "" {
+		query = `
+			SELECT id, app_id, channel_name, event_name, payload, COALESCE(socket_id, ''), created_at
+			FROM channel_history
+			WHERE app_id = $1 AND channel_name = $2
+			ORDER BY created_at DESC
+			LIMIT $3;
+		`
+		rows, err = s.pool.Query(ctx, query, appID, channelName, limit)
+	} else {
+		query = `
+			SELECT id, app_id, channel_name, event_name, payload, COALESCE(socket_id, ''), created_at
+			FROM channel_history
+			WHERE app_id = $1
+			ORDER BY created_at DESC
+			LIMIT $2;
+		`
+		rows, err = s.pool.Query(ctx, query, appID, limit)
+	}
 	if err != nil {
 		return nil, err
 	}

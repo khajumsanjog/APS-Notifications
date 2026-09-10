@@ -201,10 +201,29 @@ func seedDefaultData(st store.Store, masterKey []byte) {
 	}
 	_ = st.CreateApp(ctx, app)
 
+	encSecret2, _ := crypto.Encrypt([]byte("c1ea8e9dd1954f6ab461"), masterKey)
+	app2 := &models.App{
+		ID:                    "8886000",
+		Name:                  "Khajum Sanjog Custom App",
+		AppKey:                "4f4e63ace80446d2ba91",
+		SecretCiphertext:      encSecret2,
+		OwnerID:               user.ID,
+		Cluster:               "mt1",
+		RateLimitRPS:          1000,
+		MaxConnections:        10000,
+		MessageHistoryEnabled: true,
+		WebhooksEnabled:       true,
+	}
+	_ = st.CreateApp(ctx, app2)
+
 	_ = st.CreateBeamsInstance(ctx, &models.BeamsInstance{
 		InstanceID: "beams_demo_instance",
 		AppID:      app.ID,
 	})
+	_ = st.CreateBeamsInstance(ctx, &models.BeamsInstance{
+		InstanceID: "beams_custom_instance",
+		AppID:      app2.ID,
+	})
 
-	log.Info().Str("email", "developer@khajumsanjog.com").Msg("Seeded default developer account (password: password123)")
+	log.Info().Str("email", "developer@khajumsanjog.com").Msg("Seeded default developer account and apps (password: password123)")
 }

@@ -15,7 +15,9 @@ import {
   Plus,
   ChevronDown,
   BookOpen,
+  ExternalLink,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface AppItem {
   id: string;
@@ -103,32 +105,33 @@ export default function DashboardLayout({
     { name: "APS Beams Push", href: `/dashboard/apps/${currentAppId}/beams`, icon: Bell },
     { name: "Webhooks & Replay", href: `/dashboard/apps/${currentAppId}/webhooks`, icon: Webhook },
     { name: "Message History", href: `/dashboard/apps/${currentAppId}/history`, icon: History },
-    { name: "API Docs & Quickstart", href: `/dashboard/apps/${currentAppId}/docs`, icon: BookOpen },
+    { name: "API Quickstart", href: `/dashboard/apps/${currentAppId}/docs`, icon: BookOpen },
+    { name: "APS Docs Portal ↗", href: `/docs`, icon: ExternalLink },
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 transition-colors duration-150">
       {/* Sidebar */}
-      <aside className="w-60 border-r border-zinc-800/80 bg-zinc-950 flex flex-col shrink-0 select-none">
+      <aside className="w-60 border-r border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 flex flex-col shrink-0 select-none">
         {/* Brand Header */}
-        <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800/80">
+        <div className="h-14 flex items-center justify-between px-4 border-b border-slate-200 dark:border-zinc-800/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-100">
+            <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-slate-800 dark:text-zinc-100">
               <Radio className="w-3.5 h-3.5" />
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-xs text-zinc-100 tracking-tight">APS</span>
-              <span className="text-[10px] text-zinc-500 font-mono">Console</span>
+              <span className="font-semibold text-xs text-slate-900 dark:text-zinc-100 tracking-tight">APS</span>
+              <span className="text-[10px] text-slate-500 dark:text-zinc-500 font-mono">Console</span>
             </div>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400">
             v1.0
           </span>
         </div>
 
         {/* App Switcher */}
-        <div className="p-3 border-b border-zinc-800/80">
-          <div className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 mb-1.5 px-1">
+        <div className="p-3 border-b border-slate-200 dark:border-zinc-800/80">
+          <div className="text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5 px-1">
             Application
           </div>
           {apps.length > 0 ? (
@@ -139,10 +142,12 @@ export default function DashboardLayout({
                   const a = apps.find((item) => item.id === e.target.value);
                   if (a) {
                     setSelectedApp(a);
-                    router.push(`/dashboard/apps/${a.id}`);
+                    const parts = pathname.split("/");
+                    const subpage = parts[4] ? `/${parts[4]}` : "";
+                    router.push(`/dashboard/apps/${a.id}${subpage}`);
                   }
                 }}
-                className="w-full appearance-none px-2.5 py-1.5 text-xs font-medium rounded-lg bg-zinc-900/90 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-zinc-500 cursor-pointer pr-8 transition"
+                className="w-full appearance-none px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-50 dark:bg-zinc-900/90 border border-slate-300 dark:border-zinc-800 text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-purple-600 dark:focus:border-zinc-500 cursor-pointer pr-8 transition"
               >
                 {apps.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -150,15 +155,15 @@ export default function DashboardLayout({
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-zinc-500 absolute right-2.5 top-2 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute right-2.5 top-2 pointer-events-none" />
             </div>
           ) : (
-            <div className="text-xs text-zinc-500 px-1">No applications</div>
+            <div className="text-xs text-slate-400 dark:text-zinc-500 px-1">No applications</div>
           )}
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="w-full mt-2 py-1.5 px-2.5 rounded-lg border border-dashed border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 text-[11px] text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
+            className="w-full mt-2 py-1.5 px-2.5 rounded-lg border border-dashed border-slate-300 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-900/50 text-[11px] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
           >
             <Plus className="w-3 h-3" />
             <span>Create Application</span>
@@ -177,40 +182,43 @@ export default function DashboardLayout({
                   href={item.href}
                   className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition ${
                     isActive
-                      ? "bg-zinc-900 text-zinc-100 font-medium border border-zinc-800/90 shadow-xs"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40"
+                      ? "bg-purple-50 dark:bg-zinc-900 text-[#6941C6] dark:text-zinc-100 font-semibold border border-purple-200/80 dark:border-zinc-800/90 shadow-xs"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-slate-950 dark:hover:text-zinc-200 hover:bg-slate-100/70 dark:hover:bg-zinc-900/40"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-zinc-100" : "text-zinc-500"}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#6941C6] dark:text-zinc-100" : "text-slate-400 dark:text-zinc-500"}`} />
                   <span>{item.name}</span>
                 </Link>
               );
             })
           ) : (
-            <div className="p-3 text-center text-xs text-zinc-500">
+            <div className="p-3 text-center text-xs text-slate-400 dark:text-zinc-500">
               Select an application
             </div>
           )}
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-zinc-800/80 flex items-center justify-between">
+        <div className="p-3 border-t border-slate-200 dark:border-zinc-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2 px-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span className="text-[11px] text-zinc-500 font-mono">mt1 · online</span>
+            <span className="text-[11px] text-slate-500 dark:text-zinc-500 font-mono">mt1 · online</span>
           </div>
-          <button
-            onClick={handleLogout}
-            title="Sign out"
-            className="text-zinc-500 hover:text-zinc-300 p-1 rounded-md hover:bg-zinc-900 transition cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              className="text-slate-500 dark:text-zinc-500 hover:text-slate-800 dark:hover:text-zinc-300 p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-zinc-900 transition cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-zinc-950">
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-slate-50 dark:bg-zinc-950">
         {children}
       </main>
 

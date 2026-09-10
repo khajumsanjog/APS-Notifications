@@ -1,6 +1,16 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode in Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+}
+
+.dark {
   --background: #09090b;
   --foreground: #f4f4f5;
   --card: #121215;
@@ -8,8 +18,8 @@
 }
 
 body {
-  background-color: #09090b;
-  color: #f4f4f5;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", sans-serif;
   letter-spacing: -0.01em;
   min-height: 100vh;
@@ -19,8 +29,8 @@ body {
 
 /* Subtle, classy scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -28,16 +38,29 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #27272a;
+}
+
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
 }
 
 /* Selection */
 ::selection {
+  background: #ddd6fe;
+  color: #4c1d95;
+}
+
+.dark ::selection {
   background: #27272a;
   color: #ffffff;
 }

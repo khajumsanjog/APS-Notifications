@@ -5,7 +5,7 @@
 [![Go Version](https://img.shields.io/badge/Go-1.26.4+-00ADD8?style=flat&logo=go)](https://go.dev)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black?style=flat&logo=next.js)](https://nextjs.org)
 [![Pusher Compatible](https://img.shields.io/badge/Pusher-Drop--in%20Replacement-6941C6?style=flat)](https://pusher.com)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 
 ---
 

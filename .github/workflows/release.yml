@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          check-latest: true
+
+      - name: Build binaries
+        run: |
+          mkdir -p dist
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+
+          # Linux amd64
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/aps-linux-amd64/aps ./cmd/aps
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/aps-linux-amd64/apsctl ./cmd/apsctl
+          tar -czvf "dist/aps-${TAG_NAME}-linux-amd64.tar.gz" -C dist/aps-linux-amd64 aps apsctl
+
+          # Linux arm64
+          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o dist/aps-linux-arm64/aps ./cmd/aps
+          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o dist/aps-linux-arm64/apsctl ./cmd/apsctl
+          tar -czvf "dist/aps-${TAG_NAME}-linux-arm64.tar.gz" -C dist/aps-linux-arm64 aps apsctl
+
+          # macOS arm64 (Apple Silicon)
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/aps-darwin-arm64/aps ./cmd/aps
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/aps-darwin-arm64/apsctl ./cmd/apsctl
+          tar -czvf "dist/aps-${TAG_NAME}-darwin-arm64.tar.gz" -C dist/aps-darwin-arm64 aps apsctl
+
+          # macOS amd64 (Intel)
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/aps-darwin-amd64/aps ./cmd/aps
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/aps-darwin-amd64/apsctl ./cmd/apsctl
+          tar -czvf "dist/aps-${TAG_NAME}-darwin-amd64.tar.gz" -C dist/aps-darwin-amd64 aps apsctl
+
+          # Windows amd64
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/aps-windows-amd64/aps.exe ./cmd/aps
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/aps-windows-amd64/apsctl.exe ./cmd/apsctl
+          cd dist/aps-windows-amd64 && zip -r "../aps-${TAG_NAME}-windows-amd64.zip" aps.exe apsctl.exe && cd ../..
+
+          # Checksums
+          cd dist
+          sha256sum *.tar.gz *.zip > checksums.txt
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/checksums.txt
+          generate_release_notes: true
